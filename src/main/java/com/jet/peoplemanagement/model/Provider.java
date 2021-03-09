@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,9 +24,8 @@ public class Provider extends BaseDocument {
 
     @Length(min = 11, max = 11)
     @NotBlank(message = "cellphone is mandatory")
-    private String cellphone;
+    private String mobile;
 
-    @NotBlank
     private String contactPhone;
 
     @NotBlank
@@ -46,9 +46,14 @@ public class Provider extends BaseDocument {
     @NotBlank
     private String account;
 
+    private String address;
+
     @NotBlank
     @Indexed(unique = true, name = "cpfIndex")
     private String cpf;
 
     private boolean activated;
+
+    @NotNull
+    private LocalDateTime birthDate;
 }

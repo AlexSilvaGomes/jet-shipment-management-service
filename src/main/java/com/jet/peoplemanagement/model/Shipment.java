@@ -42,6 +42,4 @@ public class Shipment extends BaseDocument {
     private String receiverCep;
     private String receiverCity;
 
-    @NotBlank
-    private String status;
 }

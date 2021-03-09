@@ -15,7 +15,7 @@ import javax.validation.Valid;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin
 @RestController
 @RequestMapping("/api")
 @Api(value = "Controle para gerenciamento de provedores de serviço")
