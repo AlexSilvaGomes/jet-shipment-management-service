@@ -13,7 +13,9 @@ import org.springframework.data.mongodb.core.index.Index;
 @Configuration
 public class SimpleMongoConfig {
 
-    public static final String SHIPMENTS = "shipments";
+    public static final String COL_SHIPMENTS = "shipments";
+    public static final String CLIENTS = "clients";
+    public static final String UPLOADED_FILES = "uploadedFiles";
 
     @Bean
     public MongoClient mongo() {
@@ -29,13 +31,16 @@ public class SimpleMongoConfig {
     public MongoTemplate mongoTemplate() throws Exception {
         MongoTemplate mongoTemplate = new MongoTemplate(mongo(), "fast-jet-db");
 
-        mongoTemplate.indexOps("clients").ensureIndex(new Index("cnpj", Sort.Direction.ASC).unique());
-        mongoTemplate.indexOps("clients").ensureIndex(new Index("email", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(CLIENTS).ensureIndex(new Index("cnpj", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(CLIENTS).ensureIndex(new Index("email", Sort.Direction.ASC).unique());
 
+        mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("saleCode", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("client", Sort.Direction.ASC));
 
-        mongoTemplate.indexOps(SHIPMENTS).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).unique());
-        mongoTemplate.indexOps(SHIPMENTS).ensureIndex(new Index("saleCode", Sort.Direction.ASC).unique());
-        mongoTemplate.indexOps(SHIPMENTS).ensureIndex(new Index("client", Sort.Direction.ASC));
+        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC).unique());
+
 
 
 //        MongoJsonSchema schema = MongoJsonSchemaCreator.create(mongoTemplate.getConverter()).createSchemaFor(Client.class);

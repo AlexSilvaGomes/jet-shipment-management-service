@@ -1,5 +1,6 @@
 package com.jet.peoplemanagement.fileloader;
 
+import com.jet.peoplemanagement.service.ShipmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -8,15 +9,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,10 +25,12 @@ import java.util.stream.Collectors;
 public class FileUploadController {
 
     private final StorageService storageService;
+    private final ShipmentService shipmentService;
 
     @Autowired
-    public FileUploadController(StorageService storageService) {
+    public FileUploadController(StorageService storageService, ShipmentService shipmentService) {
         this.storageService = storageService;
+        this.shipmentService = shipmentService;
     }
 
     @GetMapping("/")
@@ -58,6 +58,13 @@ public class FileUploadController {
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
 
         storageService.store(file);
+        //Path loader = storageService.load(file.getOriginalFilename());
+
+        //File myTestFile =  new File(loader.toFile().getPath());
+        //Shipment ship = FileToShipMapper.giveMeShipmentModel(myTestFile);
+
+        //shipmentService.save(ship);
+
         //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
 
         return new ResponseEntity<>("Ok", HttpStatus.OK);
@@ -67,11 +74,25 @@ public class FileUploadController {
 
     @ApiOperation(value = "Load file")
     @PostMapping("/loadFiles")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile[] files,
+    public ResponseEntity<String> handleFilesUpload(@RequestParam("file") List<MultipartFile> files,
                                                    @RequestParam String clientName,
-                                                   @RequestParam String clientId) {
+                                                   @RequestParam String clientId) throws IOException {
 
-        Arrays.asList(files).stream().forEach(storageService::store);
+        //Arrays.asList(files).stream().forEach(storageService::store);
+
+        storageService.storeAndHandleFiles(files);
+
+        /*Path loader = storageService.load(files[0].getOriginalFilename());
+        File file =  loader.toFile();
+        Shipment ship = FileToShipMapper.giveMeShipmentModel(file);
+
+        shipmentService.save(ship);*/
+
+       /* if (file.delete()) {
+            log.info("success deleting file {}", file.getName());
+        } else {
+            log.info("error deleting file {}", file.getName());
+        }*/
 
         //storageService.store(file);
         //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
