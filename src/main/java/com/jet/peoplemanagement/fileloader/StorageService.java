@@ -1,5 +1,6 @@
 package com.jet.peoplemanagement.fileloader;
 
+import com.jet.peoplemanagement.model.Client;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 import rx.Single;
@@ -12,13 +13,15 @@ public interface StorageService {
 
     void init();
 
-    void store(MultipartFile file);
+    void storeOnDisk(MultipartFile file, Path fileLocation);
 
-    Single<String> storeAndHandleFiles(List<MultipartFile> files);
+    Single<String> storeAllFiles(List<MultipartFile> files, Client client);
+
+    Single<String> handleFilesUpload(List<MultipartFile> files, Client client);
 
     Stream<Path> loadAll();
 
-    Path load(String filename);
+    Path loadFromDisk(String filename);
 
     Resource loadAsResource(String filename);
 
