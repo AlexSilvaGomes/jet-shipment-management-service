@@ -1,6 +1,7 @@
 package com.jet.peoplemanagement.fileloader;
 
 import com.jet.peoplemanagement.model.Shipment;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -9,7 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Random;
+import java.util.UUID;
 
+@Slf4j
 public class FileToShipMapper {
 
     public static Shipment giveMeShipmentModel(File file) throws IOException {
@@ -55,7 +59,7 @@ public class FileToShipMapper {
 
             Instant end = Instant.now();
             Duration duration = Duration.between(init,  end);
-            System.out.println(duration);
+            log.info("Shipment convert for {} time {}", envio.getShipmentCode(), duration);
 
         }
 
@@ -70,9 +74,12 @@ public class FileToShipMapper {
         envio.setProductDesc(index[1] + " " + index[2]);
         envio.setSku(index[5]);
 
-        String[]  shipmentCodePlusSaleCode = index[11].split("\\s+");
-        envio.setSaleCode(shipmentCodePlusSaleCode[1]);
-        envio.setShipmentCode(shipmentCodePlusSaleCode[3]);
+        String[]  shipmentCodeMoreSaleCode = index[11].split("\\s+");
+        //envio.setSaleCode(shipmentCodeMoreSaleCode[1]);
+        envio.setSaleCode(UUID.randomUUID().toString());
+
+        //envio.setShipmentCode(shipmentCodeMoreSaleCode[3]);
+        envio.setShipmentCode(UUID.randomUUID().toString());
         envio.setShipType(index[12]);
         envio.setZone(index[13]);
         envio.setReceiverNeighbor(index[14]);
@@ -82,8 +89,6 @@ public class FileToShipMapper {
         envio.setReceiverAddressComp(index[18].replace("Complemento:","").trim());
         envio.setReceiverCity(index[19].replace("Cidade:","").trim());
         envio.setReceiverCep(index[20].replace("CEP:","").trim());
-
-        System.out.println(envio);
 
         return envio;
     }

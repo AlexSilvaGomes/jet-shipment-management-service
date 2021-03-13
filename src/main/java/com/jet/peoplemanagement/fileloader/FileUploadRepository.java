@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface FileUploadRepository extends MongoRepository<FileUpload, String> {
 
     Optional<FileUpload> findByShipmentCode(String shipmentCode);
+
+    Optional<FileUpload> findByName(String name);
 }

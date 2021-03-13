@@ -43,6 +43,13 @@ public class FileUploadService {
         else throw new EntityNotFoundException(FileUpload.class, "shipmentCode", shipmentCode);
     }
 
+    public FileUpload findByName(String name) {
+        Optional<FileUpload> fileData = fileRepository.findByName(name);
+
+        if (fileData.isPresent()) return fileData.get();
+        else throw new EntityNotFoundException(FileUpload.class, "name", name);
+    }
+
     public FileUpload save(FileUpload file) {
         file.setCreatedAt(LocalDateTime.now());
         return fileRepository.save(file);

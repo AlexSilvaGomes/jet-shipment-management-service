@@ -1,9 +1,11 @@
 package com.jet.peoplemanagement.fileloader;
 
+import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.service.ShipmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +15,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import rx.Single;
+import rx.schedulers.Schedulers;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,7 +63,13 @@ public class FileUploadController {
     @PostMapping("/loadFile")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
 
-        storageService.store(file);
+        Instant init = Instant.now();
+
+        storageService.storeOnDisk(file);
+
+        Instant end = Instant.now();
+        log.info("Complete time for  {}",  Duration.between(init,  end) );
+
         //Path loader = storageService.load(file.getOriginalFilename());
 
         //File myTestFile =  new File(loader.toFile().getPath());
@@ -67,6 +79,8 @@ public class FileUploadController {
 
         //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
 
+
+
         return new ResponseEntity<>("Ok", HttpStatus.OK);
 
         //return "redirect:/";
@@ -74,13 +88,26 @@ public class FileUploadController {
 
     @ApiOperation(value = "Load file")
     @PostMapping("/loadFiles")
-    public ResponseEntity<String> handleFilesUpload(@RequestParam("file") List<MultipartFile> files,
-                                                   @RequestParam String clientName,
-                                                   @RequestParam String clientId) throws IOException {
+    public Single<ResponseEntity<String>> handleFilesUpload(@RequestParam("file") List<MultipartFile> files,
+                                                            @RequestParam String clientId,
+                                                            @RequestParam String clientName) throws IOException {
 
         //Arrays.asList(files).stream().forEach(storageService::store);
 
-        storageService.storeAndHandleFiles(files);
+        Instant init = Instant.now();
+
+        //Client client = new Client(clientId);
+        Client client = new Client(String.valueOf(RandomUtils.nextInt()));
+        client.setName(clientName);
+
+        return storageService.storeAllFiles(files, client)
+                .subscribeOn(Schedulers.io())
+                .map(s -> {
+            Instant end = Instant.now();
+            log.info("Total duration {} | for {} files ",  Duration.between(init,  end) , files.size());
+            return new ResponseEntity<>("Ok", HttpStatus.OK);
+        });
+
 
         /*Path loader = storageService.load(files[0].getOriginalFilename());
         File file =  loader.toFile();
@@ -97,7 +124,7 @@ public class FileUploadController {
         //storageService.store(file);
         //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
 
-        return new ResponseEntity<>("Ok", HttpStatus.OK);
+
 
         //return "redirect:/";
     }

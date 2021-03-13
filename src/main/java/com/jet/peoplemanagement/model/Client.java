@@ -11,6 +11,10 @@ import javax.validation.constraints.NotBlank;
 @Document(collection = "clients")
 public class Client extends BaseDocument {
 
+    public Client(String id) {
+        this.id = id;
+    }
+
     @NotBlank(message = "Company name is mandatory")
     private String companyName;
 
@@ -33,4 +37,6 @@ public class Client extends BaseDocument {
     private String contactPhone;
 
     private boolean activated;
+
+
 }

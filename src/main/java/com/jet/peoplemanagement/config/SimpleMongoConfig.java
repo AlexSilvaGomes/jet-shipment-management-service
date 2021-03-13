@@ -38,8 +38,8 @@ public class SimpleMongoConfig {
         mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("saleCode", Sort.Direction.ASC).unique());
         mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("client", Sort.Direction.ASC));
 
-        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).unique());
-        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC));
+        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC));
 
 
 

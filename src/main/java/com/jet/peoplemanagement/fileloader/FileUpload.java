@@ -22,7 +22,7 @@ public class FileUpload extends BaseDocument {
     private String name;
 
     @NotBlank
-    @Indexed(unique = true)
+    @Indexed(unique = false)
     private String shipmentCode;
 
     @NotBlank
