@@ -19,10 +19,12 @@ import rx.Single;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api")
@@ -42,7 +44,7 @@ public class FileUploadController {
     @GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
 
-        model.addAttribute("files", storageService.loadAll().map(
+        model.addAttribute("files", storageService.loadAll("clientNamePassar").stream().map(
                 path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                         "serveFile", path.getFileName().toString()).build().toUri().toString())
                 .collect(Collectors.toList()));
@@ -65,10 +67,10 @@ public class FileUploadController {
 
         Instant init = Instant.now();
 
-        storageService.storeOnDisk(file);
+        //storageService.storeOnDisk(file);
 
         Instant end = Instant.now();
-        log.info("Complete time for  {}",  Duration.between(init,  end) );
+        log.info("Complete time for  {}", Duration.between(init, end));
 
         //Path loader = storageService.load(file.getOriginalFilename());
 
@@ -80,9 +82,7 @@ public class FileUploadController {
         //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
 
 
-
         return new ResponseEntity<>("Ok", HttpStatus.OK);
-
         //return "redirect:/";
     }
 
@@ -91,8 +91,6 @@ public class FileUploadController {
     public Single<ResponseEntity<String>> handleFilesUpload(@RequestParam("file") List<MultipartFile> files,
                                                             @RequestParam String clientId,
                                                             @RequestParam String clientName) throws IOException {
-
-        //Arrays.asList(files).stream().forEach(storageService::store);
 
         Instant init = Instant.now();
 
@@ -103,30 +101,21 @@ public class FileUploadController {
         return storageService.storeAllFiles(files, client)
                 .subscribeOn(Schedulers.io())
                 .map(s -> {
-            Instant end = Instant.now();
-            log.info("Total duration {} | for {} files ",  Duration.between(init,  end) , files.size());
-            return new ResponseEntity<>("Ok", HttpStatus.OK);
-        });
+                    startFileLoader(files, init, client);
+                    return new ResponseEntity<>("Files received", HttpStatus.OK);
+                });
+    }
 
-
-        /*Path loader = storageService.load(files[0].getOriginalFilename());
-        File file =  loader.toFile();
-        Shipment ship = FileToShipMapper.giveMeShipmentModel(file);
-
-        shipmentService.save(ship);*/
-
-       /* if (file.delete()) {
-            log.info("success deleting file {}", file.getName());
-        } else {
-            log.info("error deleting file {}", file.getName());
-        }*/
-
-        //storageService.store(file);
-        //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
-
-
-
-        //return "redirect:/";
+    private void startFileLoader(List<MultipartFile> files, Instant init, Client client) {
+        List<Path> paths = storageService.loadAll(client.getName());
+        storageService.handleFilesUpload(paths, client)
+                .subscribeOn(Schedulers.io())
+                .subscribe(result -> {
+                    Instant end = Instant.now();
+                    log.info("Total duration {} | for {} files ", Duration.between(init, end), files.size());
+                }, throwable -> {
+                    log.info("Error importing files");
+                });
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)

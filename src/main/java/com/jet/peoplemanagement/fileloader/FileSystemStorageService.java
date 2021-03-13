@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,6 +29,7 @@ public class FileSystemStorageService implements StorageService {
     private final Path rootLocation;
     private final ShipmentService shipService;
     private final FileUploadService uploadService;
+    private Path clientLocation;
 
     @Autowired
     public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, FileUploadService uploadService) {
@@ -51,7 +52,7 @@ public class FileSystemStorageService implements StorageService {
                 throw new StorageException("Cannot store file outside current directory.");
             }
             //Path filepath = Paths.get(destinationFile.toString(), file.getOriginalFilename());
-            file.transferTo(destinationFile);
+            //file.transferTo(destinationFile);
 
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
@@ -64,7 +65,7 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public Single<String> storeAllFiles(List<MultipartFile> files, Client client) {
-        Path fileLocation = initClientPath(client.getName());
+        Path fileLocation = getClientPath(client.getName());
         return Single.create(singleSubscriber -> {
             files.stream().forEach(fileItem -> storeOnDisk(fileItem, fileLocation));
             singleSubscriber.onSuccess("Sucesso");
@@ -72,17 +73,17 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public Single<String> handleFilesUpload(List<MultipartFile> files, Client client) {
+    public Single<String> handleFilesUpload(List<Path> files, Client client) {
 
         return Single.create(singleSubscriber -> {
-            files.stream().forEach(fileItem -> {
+            files.forEach(fileItem -> {
 
                 FileUpload fileSaved = new FileUpload();
-                try {
-                    fileSaved = storeOnDb(client, fileItem.getOriginalFilename());
-                    storeOnDisk(fileItem);
-                    File fileFromDisk = loadFromDisk(fileItem.getOriginalFilename()).toFile();
+                File fileFromDisk = null;
 
+                try {
+                    fileSaved = storeOnDb(client, fileItem.toString());
+                    fileFromDisk = loadFromDisk(client.getName(), fileItem.toString()).toFile();
                     Shipment ship = createShipment(fileFromDisk);
                     saveFileUploadShipmentCode(fileSaved, ship);
                     deleteFileFromDisk(fileFromDisk);
@@ -93,16 +94,38 @@ public class FileSystemStorageService implements StorageService {
 
                 } catch (IOException e) {
                     log.error("Error converting fileUpload to Shipment entry. See the message: {} ", e.getMessage());
+                    copyFileToErrorDirectory(fileFromDisk, client.getName());
                     updateFileUploadStatus(fileSaved, ERROR, e.getMessage());
 
                 } catch (Exception e) {
                     log.error("General error importing file. See the message: {} ", e.getMessage());
+                    copyFileToErrorDirectory(fileFromDisk, client.getName());
                     updateFileUploadStatus(fileSaved, ERROR, e.getMessage());
                 }
             });
 
             singleSubscriber.onSuccess("Sucesso");
         });
+
+    }
+
+    private void copyFileToErrorDirectory(File fileFromDisk, String clientName) {
+        Path clientPath = getClientPath(clientName);
+
+        Path errorPath = initErrorPath(clientPath.resolve("").toString(), "error");
+        Path destinationFile = errorPath.resolve(fileFromDisk.getName()).normalize().toAbsolutePath();
+
+        if (!destinationFile.getParent().equals(errorPath.toAbsolutePath())) {
+            throw new StorageException("Cannot store file outside current directory.");
+        }
+        try (InputStream inputStream = new FileInputStream(fileFromDisk.getPath())) {
+            Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+        } catch (FileNotFoundException fileNotFoundException) {
+            fileNotFoundException.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+        deleteFileFromDisk(fileFromDisk);
 
     }
 
@@ -174,11 +197,13 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public Stream<Path> loadAll() {
+    public List<Path> loadAll(String clientName) {
         try {
-            return Files.walk(this.rootLocation, 1)
-                    .filter(path -> !path.equals(this.rootLocation))
-                    .map(this.rootLocation::relativize);
+            Path location = getClientPath(clientName);
+            return Files.walk(location, 1)
+                    .filter(path -> !path.equals(location))
+                    .map(location::relativize)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
         }
@@ -188,6 +213,14 @@ public class FileSystemStorageService implements StorageService {
     @Override
     public Path loadFromDisk(String filename) {
         return rootLocation.resolve(filename);
+    }
+
+    @Override
+    public Path loadFromDisk(String clientName, String filename) {
+        Path clientPath = Paths.get(rootLocation.getFileName().toString() , clientName);
+
+        //Path clientPath = getClientPath(clientName);
+        return clientPath.resolve(filename);
     }
 
     @Override
@@ -221,9 +254,17 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    public Path initClientPath(String name) {
+    public Path getClientPath(String name) {
         try {
             return Files.createDirectories( Paths.get(rootLocation.getFileName().toString() , name));
+        } catch (IOException e) {
+            throw new StorageException("Could not initialize storage", e);
+        }
+    }
+
+    public Path initErrorPath(String parent, String directory) {
+        try {
+            return Files.createDirectories(Paths.get(parent, directory));
         } catch (IOException e) {
             throw new StorageException("Could not initialize storage", e);
         }

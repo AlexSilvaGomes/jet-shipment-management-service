@@ -17,11 +17,13 @@ public interface StorageService {
 
     Single<String> storeAllFiles(List<MultipartFile> files, Client client);
 
-    Single<String> handleFilesUpload(List<MultipartFile> files, Client client);
+    Single<String> handleFilesUpload(List<Path> files, Client client);
 
-    Stream<Path> loadAll();
+    List<Path> loadAll(String clientName);
 
     Path loadFromDisk(String filename);
+
+    Path loadFromDisk(String clientName, String filename);
 
     Resource loadAsResource(String filename);
 
