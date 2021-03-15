@@ -1,6 +1,7 @@
 package com.jet.peoplemanagement.fileloader;
 
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
+import com.jet.peoplemanagement.model.Client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -41,6 +43,13 @@ public class FileUploadService {
 
         if (fileData.isPresent()) return fileData.get();
         else throw new EntityNotFoundException(FileUpload.class, "shipmentCode", shipmentCode);
+    }
+
+    public List<FileUpload> findByClientAndCreatedAt(Client client, LocalDateTime when){
+        List<FileUpload> items = fileRepository.findByClient(client, when);
+
+        if (!items.isEmpty()) return items;
+        else throw new EntityNotFoundException(FileUpload.class, "Client name", client.getName());
     }
 
     public FileUpload findByName(String name) {

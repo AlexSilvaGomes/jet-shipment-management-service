@@ -22,11 +22,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api")
 @Api(value = "Controle para upload de arquivos")
 @Slf4j
@@ -34,11 +35,25 @@ public class FileUploadController {
 
     private final StorageService storageService;
     private final ShipmentService shipmentService;
+    private final FileUploadService uploadService;
 
     @Autowired
-    public FileUploadController(StorageService storageService, ShipmentService shipmentService) {
+    public FileUploadController(StorageService storageService, ShipmentService shipmentService, FileUploadService uploadService) {
         this.storageService = storageService;
         this.shipmentService = shipmentService;
+        this.uploadService = uploadService;
+    }
+
+    @GetMapping("/loadedFiles")
+    @ApiOperation(value = "Obter todos os arquivos carregados no dia")
+    public ResponseEntity<List<FileUpload>> listUploadedFiles(@RequestParam String clientId,
+                                                              @RequestParam String clientName) throws IOException {
+
+        Client client = new Client(clientId);
+        client.setName(clientName);
+        List<FileUpload> items=uploadService.findByClientAndCreatedAt(client, LocalDateTime.now());
+
+        return new ResponseEntity<List<FileUpload>>(items, HttpStatus.OK);
     }
 
     @GetMapping("/")
@@ -63,32 +78,24 @@ public class FileUploadController {
 
     @ApiOperation(value = "Load file")
     @PostMapping("/loadFile")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam String clientId,
+                                                   @RequestParam String clientName) throws IOException {
 
         Instant init = Instant.now();
 
-        //storageService.storeOnDisk(file);
+        //Client client = new Client(clientId);
+        Client client = new Client(String.valueOf(RandomUtils.nextInt()));
+        client.setName(clientName);
 
-        Instant end = Instant.now();
-        log.info("Complete time for  {}", Duration.between(init, end));
+        storageService.handleSingleFileCall(client, file);
 
-        //Path loader = storageService.load(file.getOriginalFilename());
-
-        //File myTestFile =  new File(loader.toFile().getPath());
-        //Shipment ship = FileToShipMapper.giveMeShipmentModel(myTestFile);
-
-        //shipmentService.save(ship);
-
-        //redirectAttributes.addFlashAttribute("message","You successfully uploaded " + file.getOriginalFilename() + "!");
-
-
-        return new ResponseEntity<>("Ok", HttpStatus.OK);
-        //return "redirect:/";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ApiOperation(value = "Load file")
     @PostMapping("/loadFiles")
-    public Single<ResponseEntity<String>> handleFilesUpload(@RequestParam("file") List<MultipartFile> files,
+    public Single<ResponseEntity<String>> handleFilesUpload(@RequestParam("files") List<MultipartFile> files,
                                                             @RequestParam String clientId,
                                                             @RequestParam String clientName) throws IOException {
 
@@ -102,7 +109,7 @@ public class FileUploadController {
                 .subscribeOn(Schedulers.io())
                 .map(s -> {
                     startFileLoader(files, init, client);
-                    return new ResponseEntity<>("Files received", HttpStatus.OK);
+                    return new ResponseEntity<>(HttpStatus.OK);
                 });
     }
 
