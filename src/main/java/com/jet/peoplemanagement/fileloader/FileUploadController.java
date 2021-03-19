@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,8 +50,7 @@ public class FileUploadController {
 
         Client client = new Client(clientId);
         client.setName(clientName);
-        List<FileUpload> items=uploadService.findByClientAndCreatedAt(client, LocalDateTime.now());
-
+        List<FileUpload> items=uploadService.findByClientUplodsToday(client);
         return new ResponseEntity<List<FileUpload>>(items, HttpStatus.OK);
     }
 
@@ -84,8 +82,8 @@ public class FileUploadController {
 
         Instant init = Instant.now();
 
-        //Client client = new Client(clientId);
-        Client client = new Client(String.valueOf(RandomUtils.nextInt()));
+        Client client = new Client(clientId);
+        //Client client = new Client(String.valueOf(RandomUtils.nextInt()));
         client.setName(clientName);
 
         storageService.handleSingleFileCall(client, file);
