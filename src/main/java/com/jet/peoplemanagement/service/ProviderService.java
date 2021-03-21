@@ -1,8 +1,11 @@
 package com.jet.peoplemanagement.service;
 
+import com.jet.peoplemanagement.auth.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Provider;
 import com.jet.peoplemanagement.repository.ProviderRepository;
+import com.jet.peoplemanagement.user.JetUser;
+import com.jet.peoplemanagement.user.UserType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +18,17 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
+//@Primary
 @Service
 @Slf4j
 public class ProviderService {
 
+    public static final String MUDAR_123 = "Mudar123";
     @Autowired
     ProviderRepository providerRepository;
+
+    @Autowired
+    UserServiceJWT userService;
 
     public Page<Provider> findAll(Integer pageNumber, Integer pageSize) {
         Page<Provider> pageable = providerRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
@@ -32,16 +40,17 @@ public class ProviderService {
 
     public Provider findById(String id) {
         Optional<Provider> providerData = providerRepository.findById(id);
-
         if (providerData.isPresent()) return providerData.get();
-
         else throw new EntityNotFoundException(Provider.class, "id", id);
     }
 
     public Provider save(Provider provider) {
         provider.setCreatedAt(LocalDateTime.now());
         provider.setActivated(true);
-        return providerRepository.save(provider);
+        JetUser jetUser = new JetUser(provider.getEmail(), MUDAR_123, UserType.PROVIDER.getName());
+        Provider savedProvider = providerRepository.save(provider);
+        userService.save(jetUser);
+        return savedProvider;
     }
 
     public Provider update(String id, Provider updatedProvider) {
@@ -49,7 +58,7 @@ public class ProviderService {
 
         if (providerData.isPresent()) {
             Provider dbProvider = providerData.get();
-            String ignored [] = {"id", "createdAt", "activated"};
+            String ignored[] = {"id", "createdAt", "activated"};
             BeanUtils.copyProperties(updatedProvider, dbProvider, ignored);
             return providerRepository.save(dbProvider);
         } else throw new EntityNotFoundException(Provider.class, "id", id);

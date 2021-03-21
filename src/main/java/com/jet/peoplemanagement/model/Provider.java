@@ -19,6 +19,9 @@ public class Provider extends BaseDocument {
     private String mei;
 
     @NotBlank
+    private String password;
+
+    @NotBlank
     @Indexed(unique = true, name = "emailIndex")
     private String email;
 

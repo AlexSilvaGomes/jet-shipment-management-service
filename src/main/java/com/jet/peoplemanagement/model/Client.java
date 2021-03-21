@@ -36,6 +36,9 @@ public class Client extends BaseDocument {
     @NotBlank
     private String contactPhone;
 
+    @NotBlank
+    private String password;
+
     private boolean activated;
 
 

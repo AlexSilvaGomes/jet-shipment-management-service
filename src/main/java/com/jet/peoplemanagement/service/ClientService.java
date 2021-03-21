@@ -17,11 +17,28 @@ import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
-public class ClientService {
+public class ClientService
+        //implements UserDetailsService
+{
 
     @Autowired
     ClientRepository clientRepository;
 
+    /*@Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Client user = clientRepository.findByEmail(email);
+
+        if (user.getEmail().equals(email)) {
+
+            String generatedSecuredPasswordHash = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
+            user.setPassword(generatedSecuredPasswordHash);
+
+            return new User(email, user.getPassword(), new ArrayList<>());
+        } else {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+    }
+*/
     public Page<Client> findAll(Integer pageNumber, Integer pageSize) {
         Page<Client> pageable = clientRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
 
