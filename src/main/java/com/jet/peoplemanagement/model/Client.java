@@ -15,6 +15,8 @@ public class Client extends BaseDocument {
         this.id = id;
     }
 
+    public Client(){ }
+
     @NotBlank(message = "Company name is mandatory")
     private String companyName;
 
@@ -36,10 +38,5 @@ public class Client extends BaseDocument {
     @NotBlank
     private String contactPhone;
 
-    @NotBlank
-    private String password;
-
     private boolean activated;
-
-
 }

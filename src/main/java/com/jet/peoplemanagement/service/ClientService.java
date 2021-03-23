@@ -1,8 +1,11 @@
 package com.jet.peoplemanagement.service;
 
+import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.repository.ClientRepository;
+import com.jet.peoplemanagement.user.JetUser;
+import com.jet.peoplemanagement.user.UserType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,32 +16,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static com.jet.peoplemanagement.util.Constants.MUDAR_123;
 import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
-public class ClientService
-        //implements UserDetailsService
-{
+public class ClientService {
 
     @Autowired
     ClientRepository clientRepository;
 
-    /*@Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Client user = clientRepository.findByEmail(email);
+    @Autowired
+    UserServiceJWT userService;
 
-        if (user.getEmail().equals(email)) {
-
-            String generatedSecuredPasswordHash = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));
-            user.setPassword(generatedSecuredPasswordHash);
-
-            return new User(email, user.getPassword(), new ArrayList<>());
-        } else {
-            throw new UsernameNotFoundException("User not found with email: " + email);
-        }
-    }
-*/
     public Page<Client> findAll(Integer pageNumber, Integer pageSize) {
         Page<Client> pageable = clientRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
 
@@ -58,7 +48,10 @@ public class ClientService
     public Client save(Client client) {
         client.setCreatedAt(LocalDateTime.now());
         client.setActivated(true);
-        return clientRepository.save(client);
+        Client clientSaved = clientRepository.save(client);
+        JetUser jetUser = new JetUser(client.getEmail(), MUDAR_123, UserType.CLIENT.getName());
+        userService.save(jetUser);
+        return clientSaved;
     }
 
     public Client update(String id, Client updatedClient) {

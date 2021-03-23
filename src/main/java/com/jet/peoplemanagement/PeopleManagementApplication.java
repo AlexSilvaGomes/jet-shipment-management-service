@@ -1,6 +1,6 @@
 package com.jet.peoplemanagement;
 
-import com.jet.peoplemanagement.auth.UserServiceJWT;
+import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.fileloader.StorageProperties;
 import com.jet.peoplemanagement.user.JetUser;
 import com.jet.peoplemanagement.user.UserType;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-import static com.jet.peoplemanagement.service.ProviderService.MUDAR_123;
+import static com.jet.peoplemanagement.util.Constants.MUDAR_123;
 
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
@@ -31,7 +31,7 @@ public class PeopleManagementApplication implements CommandLineRunner {
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String... args) {
 		try {
 			userService.getByUsername(ADMIN_ADMIN_COM);
 		} catch (UsernameNotFoundException e) {

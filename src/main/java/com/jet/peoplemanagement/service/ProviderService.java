@@ -1,6 +1,6 @@
 package com.jet.peoplemanagement.service;
 
-import com.jet.peoplemanagement.auth.UserServiceJWT;
+import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Provider;
 import com.jet.peoplemanagement.repository.ProviderRepository;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static com.jet.peoplemanagement.util.Constants.MUDAR_123;
 import static java.util.Objects.isNull;
 
 //@Primary
@@ -23,7 +24,6 @@ import static java.util.Objects.isNull;
 @Slf4j
 public class ProviderService {
 
-    public static final String MUDAR_123 = "Mudar123";
     @Autowired
     ProviderRepository providerRepository;
 
@@ -47,8 +47,8 @@ public class ProviderService {
     public Provider save(Provider provider) {
         provider.setCreatedAt(LocalDateTime.now());
         provider.setActivated(true);
-        JetUser jetUser = new JetUser(provider.getEmail(), MUDAR_123, UserType.PROVIDER.getName());
         Provider savedProvider = providerRepository.save(provider);
+        JetUser jetUser = new JetUser(provider.getEmail(), MUDAR_123, UserType.PROVIDER.getName());
         userService.save(jetUser);
         return savedProvider;
     }
