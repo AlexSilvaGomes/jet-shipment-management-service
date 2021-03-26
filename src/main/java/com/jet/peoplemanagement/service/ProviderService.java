@@ -1,5 +1,7 @@
 package com.jet.peoplemanagement.service;
 
+import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.model.UserProfile;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Provider;
@@ -89,4 +91,9 @@ public class ProviderService {
         providerRepository.deleteAll();
     }
 
+    public UserProfile findByEmail(String email) {
+        Optional<Provider> document = providerRepository.findByEmail(email);
+        if(document.isPresent()) return document.get();
+        else throw new EntityNotFoundException(Provider.class, "email", email);
+    }
 }

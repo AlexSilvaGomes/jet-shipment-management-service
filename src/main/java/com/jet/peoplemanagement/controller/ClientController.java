@@ -46,6 +46,13 @@ public class ClientController {
         return new ResponseEntity<>(clientData, OK);
     }
 
+    @GetMapping("/clients/email/{email}")
+    @ApiOperation(value = "Obter o cliente pelo seu email")
+    public ResponseEntity<Client> getClientByEmail(@PathVariable("email") String email) {
+        Client clientData = (Client)clientService.findByEmail(email);
+        return new ResponseEntity<>(clientData, OK);
+    }
+
     @ApiOperation(value = "Criar um novo cliente")
     @PostMapping("/clients")
     public ResponseEntity<Client> createClient(@Valid @RequestBody Client client) {

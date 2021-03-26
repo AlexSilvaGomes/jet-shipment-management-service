@@ -1,7 +1,9 @@
 package com.jet.peoplemanagement.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,15 +13,13 @@ import java.time.LocalDateTime;
 
 @Data
 @Document(collection = "providers")
-public class Provider extends BaseDocument {
+@TypeAlias("Provider")
+public class Provider extends BaseDocument implements UserProfile {
 
     @NotBlank
     private String name;
-
     private String mei;
-
-    @NotBlank
-    private String password;
+    private String img;
 
     @NotBlank
     @Indexed(unique = true, name = "emailIndex")
@@ -59,4 +59,5 @@ public class Provider extends BaseDocument {
 
     @NotNull
     private LocalDateTime birthDate;
+
 }

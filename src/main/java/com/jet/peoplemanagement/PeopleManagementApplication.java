@@ -1,9 +1,9 @@
 package com.jet.peoplemanagement;
 
+import com.jet.peoplemanagement.model.Provider;
+import com.jet.peoplemanagement.service.ProviderService;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.fileloader.StorageProperties;
-import com.jet.peoplemanagement.user.JetUser;
-import com.jet.peoplemanagement.user.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-import static com.jet.peoplemanagement.util.Constants.MUDAR_123;
+import java.time.LocalDateTime;
 
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
@@ -26,6 +26,9 @@ public class PeopleManagementApplication implements CommandLineRunner {
 	@Autowired
 	UserServiceJWT userService;
 
+	@Autowired
+	ProviderService providerService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(PeopleManagementApplication.class, args);
 	}
@@ -34,8 +37,26 @@ public class PeopleManagementApplication implements CommandLineRunner {
 	public void run(String... args) {
 		try {
 			userService.getByUsername(ADMIN_ADMIN_COM);
+
 		} catch (UsernameNotFoundException e) {
-			userService.save(new JetUser(ADMIN_ADMIN_COM, MUDAR_123, UserType.PROVIDER.getName()));
+			Provider provider = new Provider(){
+				{
+					setCpf("33313868800");
+					setName("Administrador");
+					setMobile("11971937005");
+					setEmail(ADMIN_ADMIN_COM);
+					setLevel("1");
+					setZone("ALL");
+					setType("Admin");
+					setBank("Any");
+					setAccount("0000");
+					setAgency("0000");
+					setBirthDate(LocalDateTime.now());
+					setImg("profile-user.png");
+				}
+			};
+			providerService.save(provider);
 		}
+
 	}
 }

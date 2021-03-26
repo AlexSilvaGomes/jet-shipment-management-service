@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 @Document(collection = "clients")
-public class Client extends BaseDocument {
+public class Client extends BaseDocument implements UserProfile {
 
     public Client(String id) {
         this.id = id;

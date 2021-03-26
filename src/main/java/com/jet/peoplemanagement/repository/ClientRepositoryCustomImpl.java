@@ -30,11 +30,15 @@ public class ClientRepositoryCustomImpl implements ClientRepositoryCustom {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("cnpj").is(cnpj));
-
         Client entity = mongoTemplate.findOne(query, Client.class);
+        return Optional.of(entity);
+    }
 
-        testAggregationShip();
 
+    public Optional<Client> queroByEmail(String email) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("email").is(email));
+        Client entity = mongoTemplate.findOne(query, Client.class);
         return Optional.of(entity);
     }
 
