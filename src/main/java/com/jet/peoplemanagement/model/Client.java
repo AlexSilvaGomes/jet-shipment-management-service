@@ -14,7 +14,6 @@ public class Client extends BaseDocument implements UserProfile {
     public Client(String id) {
         this.id = id;
     }
-
     public Client(){ }
 
     @NotBlank(message = "Company name is mandatory")
@@ -33,10 +32,13 @@ public class Client extends BaseDocument implements UserProfile {
 
     @Length(min = 11, max = 11)
     @NotBlank(message = "cellphone is mandatory")
-    private String cellphone;
+    private String mobile;
 
-    @NotBlank
     private String contactPhone;
+
+    private  String address;
+
+    private String img;
 
     private boolean activated;
 }

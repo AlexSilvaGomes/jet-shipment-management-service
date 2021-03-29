@@ -20,6 +20,7 @@ public class SimpleMongoConfig implements InitializingBean {
 
     public static final String COL_SHIPMENTS = "shipments";
     public static final String CLIENTS = "clients";
+    public static final String PROVIDER = "providers";
     public static final String UPLOADED_FILES = "uploadedFiles";
 
     @Autowired
@@ -47,6 +48,10 @@ public class SimpleMongoConfig implements InitializingBean {
 
         ((MappingMongoConverter)mongoTemplate.getConverter())
                 .setTypeMapper(new DefaultMongoTypeMapper(null));//removes _class
+
+
+        mongoTemplate.indexOps(PROVIDER).ensureIndex(new Index("cpf", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps(PROVIDER).ensureIndex(new Index("email", Sort.Direction.ASC).unique());
 
         mongoTemplate.indexOps(CLIENTS).ensureIndex(new Index("cnpj", Sort.Direction.ASC).unique());
         mongoTemplate.indexOps(CLIENTS).ensureIndex(new Index("email", Sort.Direction.ASC).unique());
