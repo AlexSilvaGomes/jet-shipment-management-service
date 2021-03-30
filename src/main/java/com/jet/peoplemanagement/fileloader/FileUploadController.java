@@ -1,7 +1,7 @@
 package com.jet.peoplemanagement.fileloader;
 
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.service.ShipmentService;
+import com.jet.peoplemanagement.shipment.ShipmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

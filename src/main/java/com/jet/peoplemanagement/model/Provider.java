@@ -55,6 +55,8 @@ public class Provider extends BaseDocument implements UserProfile {
     @Indexed(unique = true, name = "cpfIndex")
     private String cpf;
 
+    private String cep;
+
     private boolean activated;
 
     @NotNull

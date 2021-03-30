@@ -1,8 +1,7 @@
-package com.jet.peoplemanagement.repository;
+package com.jet.peoplemanagement.shipment;
 
 
-import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.model.Shipment;
+import com.jet.peoplemanagement.shipment.Shipment;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface ShipmentRepository extends MongoRepository<Shipment, String> {

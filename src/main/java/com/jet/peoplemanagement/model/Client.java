@@ -35,10 +35,8 @@ public class Client extends BaseDocument implements UserProfile {
     private String mobile;
 
     private String contactPhone;
-
     private  String address;
-
     private String img;
-
+    private String cep;
     private boolean activated;
 }

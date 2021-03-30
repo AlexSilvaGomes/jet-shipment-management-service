@@ -1,13 +1,17 @@
 package com.jet.peoplemanagement.fileloader;
 
+import com.jet.peoplemanagement.delivery.Delivery;
+import com.jet.peoplemanagement.delivery.DeliveryService;
+import com.jet.peoplemanagement.delivery.DeliveryStatus;
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.model.Shipment;
-import com.jet.peoplemanagement.service.ShipmentService;
+import com.jet.peoplemanagement.shipment.Shipment;
+import com.jet.peoplemanagement.shipment.ShipmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 import rx.Single;
@@ -29,13 +33,15 @@ public class FileSystemStorageService implements StorageService {
     public static final String ERROR_DIR = "error";
     private final Path rootLocation;
     private final ShipmentService shipService;
+    private final DeliveryService deliveryService;
     private final FileUploadService uploadService;
     private Path clientLocation;
 
     @Autowired
-    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, FileUploadService uploadService) {
+    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, DeliveryService deliveryService, FileUploadService uploadService) {
         this.rootLocation = Paths.get(properties.getLocation());
         this.shipService = shipService;
+        this.deliveryService = deliveryService;
         this.uploadService = uploadService;
         init();
     }
@@ -187,12 +193,21 @@ public class FileSystemStorageService implements StorageService {
             ioException.printStackTrace();
         }
         deleteFileFromDisk(fileFromDisk);
-
     }
 
+    @Transactional
     private Shipment createShipment(File fileFromDisk) throws IOException {
         Shipment ship = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
-        shipService.save(ship);
+        Shipment shipSaved = shipService.save(ship);
+        Delivery delivery = new Delivery();
+        delivery.setShipmentCode(shipSaved.getShipmentCode());
+        delivery.setStatus( DeliveryStatus.POSTADO);
+        try {
+            deliveryService.save(delivery);
+        } catch (Exception e) {
+            shipService.deleteById(shipSaved.getId());
+            throw e;
+        }
         return ship;
     }
 

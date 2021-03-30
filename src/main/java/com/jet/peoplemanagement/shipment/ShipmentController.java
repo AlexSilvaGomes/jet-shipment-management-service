@@ -1,7 +1,5 @@
-package com.jet.peoplemanagement.controller;
+package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.model.Shipment;
-import com.jet.peoplemanagement.service.ShipmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

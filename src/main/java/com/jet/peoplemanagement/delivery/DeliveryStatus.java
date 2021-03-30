@@ -1,13 +1,33 @@
 package com.jet.peoplemanagement.delivery;
 
-//Postado  -> Cliente
-//Coletado -> Provedor
-//Entregue_base
-//Atribuido -> Sistema/Empresa
-//Reatribuído? (Troca de motoca por algum motivo)
-//Em curso -> Sistema(Motoca saiu da base)
-//Entregue_cliente -> Provedor
 public enum DeliveryStatus {
 
+    POSTADO("Postado", "Postado pelo cliente"),
+    COLETADO("Coletado", "Coletado pelo motoboy"),
+    ENTRADA_BASE("Distribuição", "Entrada na base"),
+    ATRIBUIDO("Atribuído", "Ditribuído na base"),
+    REATRIBUIDO("Reatribuído", "Outro motoboy fará a entrega"),
+    EM_CURSO("Saiu para entrega", "Está em curso para entrega"),
+    ENTREGUE("Entregue", "Entrega realizada"),
+    NAO_ENTREGUE("Não Entregue", "Cliente não pôde receber ou não houve tempo para entregar"),
+    ;
 
+    //Adicionar colaborador que recebeu na ENTRADA_BASE
+    //Adicionar colaborador que atribuiu e conferiu
+
+    private String keyword;
+    private String desc;
+
+    DeliveryStatus(String keyword, String desc) {
+        this.keyword = keyword;
+        this.desc = desc;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }

@@ -16,16 +16,14 @@ import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.index.Index;
 
 @Configuration
-public class SimpleMongoConfig implements InitializingBean {
+public class SimpleMongoConfig {
 
     public static final String COL_SHIPMENTS = "shipments";
     public static final String CLIENTS = "clients";
     public static final String PROVIDER = "providers";
     public static final String UPLOADED_FILES = "uploadedFiles";
-
-    @Autowired
-    @Lazy
-    private MappingMongoConverter mappingMongoConverter;
+    public static final String DELIVERIES = "deliveries";
+    public static final String FAST_JET_DB = "fast-jet-db";
 
     @Bean
     public MongoClient mongo() {
@@ -37,14 +35,9 @@ public class SimpleMongoConfig implements InitializingBean {
         return MongoClients.create(mongoClientSettings);
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        mappingMongoConverter.setTypeMapper(new DefaultMongoTypeMapper(null));
-    }
-
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), "fast-jet-db");
+        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), FAST_JET_DB);
 
         ((MappingMongoConverter)mongoTemplate.getConverter())
                 .setTypeMapper(new DefaultMongoTypeMapper(null));//removes _class
@@ -60,9 +53,12 @@ public class SimpleMongoConfig implements InitializingBean {
         mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("saleCode", Sort.Direction.ASC).unique());
         mongoTemplate.indexOps(COL_SHIPMENTS).ensureIndex(new Index("client", Sort.Direction.ASC));
 
-        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC));
+        mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("uploadedFilesShipmentIndex"));
         mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC));
 
+        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("deliveryShipmentIndex"));
+        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerDeliveryCpf", Sort.Direction.ASC));
+        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerConferenceCpf", Sort.Direction.ASC));
 
 //        MongoJsonSchema schema = MongoJsonSchemaCreator.create(mongoTemplate.getConverter()).createSchemaFor(Client.class);
 //        mongoTemplate.createCollection(Client.class, CollectionOptions.empty().schema(schema));

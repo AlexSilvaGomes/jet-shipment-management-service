@@ -1,8 +1,6 @@
-package com.jet.peoplemanagement.service;
+package com.jet.peoplemanagement.shipment;
 
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
-import com.jet.peoplemanagement.model.Shipment;
-import com.jet.peoplemanagement.repository.ShipmentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,4 +62,6 @@ public class ShipmentService {
         shipmentRepository.deleteAll();
     }
 
+    public void findByShipmentCode(String shipmentCode) {
+    }
 }

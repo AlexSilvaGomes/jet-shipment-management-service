@@ -1,5 +1,7 @@
-package com.jet.peoplemanagement.model;
+package com.jet.peoplemanagement.shipment;
 
+import com.jet.peoplemanagement.model.BaseDocument;
+import com.jet.peoplemanagement.model.Client;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;

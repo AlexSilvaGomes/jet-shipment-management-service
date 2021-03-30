@@ -1,6 +1,6 @@
 package com.jet.peoplemanagement.fileloader;
 
-import com.jet.peoplemanagement.model.Shipment;
+import com.jet.peoplemanagement.shipment.Shipment;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Random;
 import java.util.UUID;
 
 @Slf4j

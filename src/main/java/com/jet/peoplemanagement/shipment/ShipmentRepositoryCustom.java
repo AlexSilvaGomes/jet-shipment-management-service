@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.repository;
+package com.jet.peoplemanagement.shipment;
 
 
 public interface ShipmentRepositoryCustom {
