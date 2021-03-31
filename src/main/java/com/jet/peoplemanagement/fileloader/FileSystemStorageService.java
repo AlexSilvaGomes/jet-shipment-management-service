@@ -1,8 +1,8 @@
 package com.jet.peoplemanagement.fileloader;
 
-import com.jet.peoplemanagement.delivery.Delivery;
-import com.jet.peoplemanagement.delivery.DeliveryService;
 import com.jet.peoplemanagement.delivery.DeliveryStatus;
+import com.jet.peoplemanagement.delivery.DeliveryService;
+import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
@@ -199,11 +199,11 @@ public class FileSystemStorageService implements StorageService {
     private Shipment createShipment(File fileFromDisk) throws IOException {
         Shipment ship = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
         Shipment shipSaved = shipService.save(ship);
-        Delivery delivery = new Delivery();
+        DeliveryStatus delivery = new DeliveryStatus();
         delivery.setShipmentCode(shipSaved.getShipmentCode());
-        delivery.setStatus( DeliveryStatus.POSTADO);
+        delivery.setStatus( DeliveryStatusEnum.POSTADO);
         try {
-            deliveryService.save(delivery);
+            deliveryService.justSave(delivery);
         } catch (Exception e) {
             shipService.deleteById(shipSaved.getId());
             throw e;

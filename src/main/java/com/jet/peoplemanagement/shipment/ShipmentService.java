@@ -1,5 +1,7 @@
 package com.jet.peoplemanagement.shipment;
 
+import com.jet.peoplemanagement.delivery.DeliveryService;
+import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +22,9 @@ public class ShipmentService {
     @Autowired
     ShipmentRepository shipmentRepository;
 
+    @Autowired
+    DeliveryService deliveryService;
+
     public Page<Shipment> findAll(Integer pageNumber, Integer pageSize) {
         Page<Shipment> pageable = shipmentRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
 
@@ -31,9 +36,11 @@ public class ShipmentService {
     public Shipment findById(String id) {
         Optional<Shipment> shipmentData = shipmentRepository.findById(id);
 
-        if (shipmentData.isPresent()) return shipmentData.get();
-
-        else throw new EntityNotFoundException(Shipment.class, "id", id);
+        if (shipmentData.isPresent()) {
+            Shipment shipmentResult = shipmentData.get();
+            shipmentResult.setDeliveriesStatus(deliveryService.findByShipmentCode(shipmentResult.getShipmentCode()));
+            return shipmentResult;
+        } else throw new EntityNotFoundException(Shipment.class, "id", id);
     }
 
     public Shipment save(Shipment shipment) {
@@ -46,7 +53,7 @@ public class ShipmentService {
 
         if (shipmentData.isPresent()) {
             Shipment dbShipment = shipmentData.get();
-            String ignored [] = {"id", "createdAt"};
+            String ignored[] = {"id", "createdAt"};
             BeanUtils.copyProperties(updatedShipment, dbShipment, ignored);
             return shipmentRepository.save(dbShipment);
         } else throw new EntityNotFoundException(Shipment.class, "id", id);
@@ -62,6 +69,17 @@ public class ShipmentService {
         shipmentRepository.deleteAll();
     }
 
-    public void findByShipmentCode(String shipmentCode) {
+    public Shipment findByShipmentCode(String shipmentCode) {
+        Optional<Shipment> shipmentData = shipmentRepository.findByShipmentCode(shipmentCode);
+
+        if (shipmentData.isPresent()) {
+            return shipmentData.get();
+        } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
+    }
+
+    public void updateStatus(DeliveryStatusEnum status, String shipmentCode) {
+        Shipment currentShip = findByShipmentCode(shipmentCode);
+        currentShip.setStatus(status);//Atualizando com o último status
+        save(currentShip);
     }
 }

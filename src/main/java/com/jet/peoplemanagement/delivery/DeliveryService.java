@@ -26,40 +26,52 @@ public class DeliveryService {
     @Autowired
     ShipmentService shipmentService;
 
-    public Page<Delivery> findAll(Integer pageNumber, Integer pageSize) {
-        Page<Delivery> pageable = deliveryRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
+    public Page<DeliveryStatus> findAll(Integer pageNumber, Integer pageSize) {
+        Page<DeliveryStatus> pageable = deliveryRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
 
-        if (!pageable.hasContent()) throw new EntityNotFoundException(Delivery.class);
+        if (!pageable.hasContent()) throw new EntityNotFoundException(DeliveryStatus.class);
 
         return pageable;
     }
 
-    public Delivery findById(String id) {
-        Optional<Delivery> deliveryData = deliveryRepository.findById(id);
+    public DeliveryStatus findById(String id) {
+        Optional<DeliveryStatus> deliveryData = deliveryRepository.findById(id);
 
         if (deliveryData.isPresent()) return deliveryData.get();
 
-        else throw new EntityNotFoundException(Delivery.class, "id", id);
+        else throw new EntityNotFoundException(DeliveryStatus.class, "id", id);
     }
 
-    public Delivery save(Delivery delivery) {
+    public DeliveryStatus save(DeliveryStatus delivery) {
+        delivery.setCreatedAt(LocalDateTime.now());
+        DeliveryStatus deliveryResult = deliveryRepository.save(delivery);
+        shipmentService.updateStatus(delivery.getStatus(), delivery.getShipmentCode());
+        return deliveryResult;
+    }
+
+    /**
+     * Vai salvar sem atualizar status no shipment
+     * @param delivery
+     * @return
+     */
+    public DeliveryStatus justSave(DeliveryStatus delivery) {
         delivery.setCreatedAt(LocalDateTime.now());
         return deliveryRepository.save(delivery);
     }
 
-    public Delivery update(String id, Delivery updatedDelivery) {
-        Optional<Delivery> deliveryData = deliveryRepository.findById(id);
+    public DeliveryStatus update(String id, DeliveryStatus updatedDelivery) {
+        Optional<DeliveryStatus> deliveryData = deliveryRepository.findById(id);
 
         if (deliveryData.isPresent()) {
-            Delivery dbDelivery = deliveryData.get();
-            String ignored [] = {"id", "createdAt"};
+            DeliveryStatus dbDelivery = deliveryData.get();
+            String ignored[] = {"id", "createdAt"};
             BeanUtils.copyProperties(updatedDelivery, dbDelivery, ignored);
             return deliveryRepository.save(dbDelivery);
-        } else throw new EntityNotFoundException(Delivery.class, "id", id);
+        } else throw new EntityNotFoundException(DeliveryStatus.class, "id", id);
     }
 
     public void deleteById(String id) {
-        Delivery document = findById(id);
+        DeliveryStatus document = findById(id);
         log.info("Deleting delivery with id {}", id);
         deliveryRepository.deleteById(document.getId());
     }
@@ -68,10 +80,11 @@ public class DeliveryService {
         deliveryRepository.deleteAll();
     }
 
-    public List<Delivery> findByShipmentCode(String shipmentCode) {
-        List<Delivery> deliveryData = deliveryRepository.findByShipmentCode(shipmentCode);
+    public List<DeliveryStatus> findByShipmentCode(String shipmentCode) {
+        List<DeliveryStatus> deliveryData = deliveryRepository.findByShipmentCode(shipmentCode);
 
-        if (Collections.isEmpty(deliveryData)) throw new EntityNotFoundException(Delivery.class, "shipmentCode", shipmentCode);
+        if (Collections.isEmpty(deliveryData))
+            throw new EntityNotFoundException(DeliveryStatus.class, "shipmentCode", shipmentCode);
         else return deliveryData;
     }
 }

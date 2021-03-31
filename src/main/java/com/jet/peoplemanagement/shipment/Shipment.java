@@ -1,8 +1,9 @@
 package com.jet.peoplemanagement.shipment;
 
+import com.jet.peoplemanagement.delivery.DeliveryStatus;
+import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.BaseDocument;
 import com.jet.peoplemanagement.model.Client;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -50,4 +52,7 @@ public class Shipment extends BaseDocument {
     private String receiverCity;
     private String receiverCep;
 
+    private DeliveryStatusEnum status = DeliveryStatusEnum.POSTADO;
+
+    private List<DeliveryStatus> deliveriesStatus;
 }

@@ -59,6 +59,8 @@ public class SimpleMongoConfig {
         mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("deliveryShipmentIndex"));
         mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerDeliveryCpf", Sort.Direction.ASC));
         mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerConferenceCpf", Sort.Direction.ASC));
+        //mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipment", Sort.Direction.ASC));
+
 
 //        MongoJsonSchema schema = MongoJsonSchemaCreator.create(mongoTemplate.getConverter()).createSchemaFor(Client.class);
 //        mongoTemplate.createCollection(Client.class, CollectionOptions.empty().schema(schema));

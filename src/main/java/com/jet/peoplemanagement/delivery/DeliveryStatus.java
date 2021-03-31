@@ -1,33 +1,34 @@
 package com.jet.peoplemanagement.delivery;
 
-public enum DeliveryStatus {
+import com.jet.peoplemanagement.model.BaseDocument;
+import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.shipment.Shipment;
+import lombok.Data;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-    POSTADO("Postado", "Postado pelo cliente"),
-    COLETADO("Coletado", "Coletado pelo motoboy"),
-    ENTRADA_BASE("Distribuição", "Entrada na base"),
-    ATRIBUIDO("Atribuído", "Ditribuído na base"),
-    REATRIBUIDO("Reatribuído", "Outro motoboy fará a entrega"),
-    EM_CURSO("Saiu para entrega", "Está em curso para entrega"),
-    ENTREGUE("Entregue", "Entrega realizada"),
-    NAO_ENTREGUE("Não Entregue", "Cliente não pôde receber ou não houve tempo para entregar"),
-    ;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
-    //Adicionar colaborador que recebeu na ENTRADA_BASE
-    //Adicionar colaborador que atribuiu e conferiu
+@Data
+@Document(collection = "deliveries")
+public class DeliveryStatus extends BaseDocument {
 
-    private String keyword;
-    private String desc;
+    @NotBlank
+    @Indexed(unique = false, name = "shipmentIndex")
+    private String shipmentCode;
 
-    DeliveryStatus(String keyword, String desc) {
-        this.keyword = keyword;
-        this.desc = desc;
-    }
+    @NotBlank
+    @Indexed(unique = false, name = "cpfIndex")
+    private String providerDeliveryCpf;
 
-    public String getDesc() {
-        return desc;
-    }
+    @NotBlank
+    private String providerDeliveryName;
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
+    @Indexed(unique = true, name = "cpfIndex")
+    private String providerConferenceCpf;
+
+    @NotNull
+    private DeliveryStatusEnum status;
 }
