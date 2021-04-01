@@ -36,6 +36,13 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentData, OK);
     }
 
+    @GetMapping("/shipments/shipmentCode{shipmentCode}")
+    @ApiOperation(value = "Obter o envio pelo seu código")
+    public ResponseEntity<Shipment> getShipmentByShipmentCode(@PathVariable("shipmentCode") String shipmentCode) {
+        Shipment shipmentData = shipmentService.findByShipmentCode(shipmentCode);
+        return new ResponseEntity<>(shipmentData, OK);
+    }
+
     @ApiOperation(value = "Criar um novo envio")
     @PostMapping("/shipments")
     public ResponseEntity<Shipment> createShipment(@Valid @RequestBody Shipment shipment) {

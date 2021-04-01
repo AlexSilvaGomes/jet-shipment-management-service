@@ -1,6 +1,6 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.delivery.DeliveryService;
+import com.jet.peoplemanagement.delivery.ShipmentStatusService;
 import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class ShipmentService {
     ShipmentRepository shipmentRepository;
 
     @Autowired
-    DeliveryService deliveryService;
+    ShipmentStatusService deliveryService;
 
     public Page<Shipment> findAll(Integer pageNumber, Integer pageSize) {
         Page<Shipment> pageable = shipmentRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
@@ -38,7 +38,7 @@ public class ShipmentService {
 
         if (shipmentData.isPresent()) {
             Shipment shipmentResult = shipmentData.get();
-            shipmentResult.setDeliveriesStatus(deliveryService.findByShipmentCode(shipmentResult.getShipmentCode()));
+            shipmentResult.setShipmentsStatus(deliveryService.findByShipmentCode(shipmentResult.getShipmentCode()));
             return shipmentResult;
         } else throw new EntityNotFoundException(Shipment.class, "id", id);
     }

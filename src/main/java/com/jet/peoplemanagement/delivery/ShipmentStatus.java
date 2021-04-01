@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Document(collection = "deliveries")
-public class DeliveryStatus extends BaseDocument {
+public class ShipmentStatus extends BaseDocument {
 
     @NotBlank
     @Indexed(unique = false, name = "shipmentIndex")
@@ -21,13 +21,12 @@ public class DeliveryStatus extends BaseDocument {
 
     @NotBlank
     @Indexed(unique = false, name = "cpfIndex")
-    private String providerDeliveryCpf;
+    private String statusResponsibleCpf;
 
     @NotBlank
-    private String providerDeliveryName;
+    private String statusResponsibleName;
 
-    @Indexed(unique = true, name = "cpfIndex")
-    private String providerConferenceCpf;
+    //private String providerConferenceCpf;
 
     @NotNull
     private DeliveryStatusEnum status;

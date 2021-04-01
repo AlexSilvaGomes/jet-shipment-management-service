@@ -24,6 +24,7 @@ public class SimpleMongoConfig {
     public static final String UPLOADED_FILES = "uploadedFiles";
     public static final String DELIVERIES = "deliveries";
     public static final String FAST_JET_DB = "fast-jet-db";
+    public static final String PROVIDER_DELIVERY_CPF = "providerDeliveryCpf";
 
     @Bean
     public MongoClient mongo() {
@@ -57,8 +58,8 @@ public class SimpleMongoConfig {
         mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC));
 
         mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("deliveryShipmentIndex"));
-        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerDeliveryCpf", Sort.Direction.ASC));
-        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerConferenceCpf", Sort.Direction.ASC));
+        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index(PROVIDER_DELIVERY_CPF, Sort.Direction.ASC));
+        //mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerConferenceCpf", Sort.Direction.ASC));
         //mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipment", Sort.Direction.ASC));
 
 

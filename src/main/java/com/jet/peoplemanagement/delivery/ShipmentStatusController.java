@@ -18,84 +18,84 @@ import static org.springframework.http.HttpStatus.OK;
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api")
-@Api(value = "Controle para gerenciamento de entregas")
-public class DeliveryController {
+@Api(value = "Controle para gerenciamento de status de entrega")
+public class ShipmentStatusController {
 
     @Autowired
-    DeliveryService shipmentService;
+    ShipmentStatusService shipmentStatusService;
 
-    @GetMapping("/deliveries")
+    @GetMapping("/shipmentsStatus")
     @ApiOperation(value = "Obter todos os envios paginando")
-    public ResponseEntity<Page<DeliveryStatus>> getAll(@RequestParam(required = false) Integer pageNumber, @RequestParam(required = false) Integer pageSize) {
-        Page<DeliveryStatus> pageable = shipmentService.findAll(pageNumber, pageSize);
+    public ResponseEntity<Page<ShipmentStatus>> getAll(@RequestParam(required = false) Integer pageNumber, @RequestParam(required = false) Integer pageSize) {
+        Page<ShipmentStatus> pageable = shipmentStatusService.findAll(pageNumber, pageSize);
         return new ResponseEntity<>(pageable, OK);
     }
 
-    @GetMapping("/deliveries/{id}")
+    @GetMapping("/shipmentsStatus/{id}")
     @ApiOperation(value = "Obter o envio pelo seu id")
-    public ResponseEntity<DeliveryStatus> getById(@PathVariable("id") String id) {
-        DeliveryStatus shipmentData = shipmentService.findById(id);
+    public ResponseEntity<ShipmentStatus> getById(@PathVariable("id") String id) {
+        ShipmentStatus shipmentData = shipmentStatusService.findById(id);
         return new ResponseEntity<>(shipmentData, OK);
     }
 
-    @GetMapping("/deliveries/shipmentCode/{shipmentCode}")
+    @GetMapping("/shipmentsStatus/shipmentCode/{shipmentCode}")
     @ApiOperation(value = "Obter o envio pelo seu id")
-    public ResponseEntity<List<DeliveryStatus>> getByShipmentCode(@PathVariable("shipmentCode") String shipmentCode) {
-        List<DeliveryStatus> data = shipmentService.findByShipmentCode(shipmentCode);
+    public ResponseEntity<List<ShipmentStatus>> getByShipmentCode(@PathVariable("shipmentCode") String shipmentCode) {
+        List<ShipmentStatus> data = shipmentStatusService.findByShipmentCode(shipmentCode);
         return new ResponseEntity<>(data, OK);
     }
 
     @ApiOperation(value = "Criar um novo envio")
-    @PostMapping("/deliveries")
-    public ResponseEntity<DeliveryStatus> create(@Valid @RequestBody DeliveryStatus delivery) {
-        DeliveryStatus _shipment = shipmentService.save(delivery);
+    @PostMapping("/shipmentsStatus")
+    public ResponseEntity<ShipmentStatus> create(@Valid @RequestBody ShipmentStatus delivery) {
+        ShipmentStatus _shipment = shipmentStatusService.save(delivery);
         return new ResponseEntity<>(_shipment, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Alterar um envio passando seu id")
-    @PutMapping("/deliveries/{id}")
-    public ResponseEntity<DeliveryStatus> update(@Valid @PathVariable("id") String id, @RequestBody DeliveryStatus updateShipment) {
-        DeliveryStatus shipmentData = shipmentService.update(id, updateShipment);
+    @PutMapping("/shipmentsStatus/{id}")
+    public ResponseEntity<ShipmentStatus> update(@Valid @PathVariable("id") String id, @RequestBody ShipmentStatus updateShipment) {
+        ShipmentStatus shipmentData = shipmentStatusService.update(id, updateShipment);
         return new ResponseEntity<>(shipmentData, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Deletar um envio pelo seu id")
-    @DeleteMapping("/deliveries/{id}")
+    @DeleteMapping("/shipmentsStatus/{id}")
     public ResponseEntity<HttpStatus> delete(@PathVariable("id") String id) {
-        shipmentService.deleteById(id);
+        shipmentStatusService.deleteById(id);
         return new ResponseEntity<>(NO_CONTENT);
     }
 
     @ApiOperation(value = "Deletar todos os envios")
-    @DeleteMapping("/deliveries")
+    @DeleteMapping("/shipmentsStatus")
     public ResponseEntity<HttpStatus> deleteAll() {
-        shipmentService.deleteAll();
+        shipmentStatusService.deleteAll();
         return new ResponseEntity<>(NO_CONTENT);
     }
 
    /* @ApiOperation(value = "Ativar envio")
-    @PostMapping("/deliveries/activate/{id}")
+    @PostMapping("/shipmentsStatus/activate/{id}")
     public ResponseEntity<HttpStatus> activate(@PathVariable("id") String id) {
         shipmentService.activate(id);
         return new ResponseEntity<>(NO_CONTENT);
     }
 
     @ApiOperation(value = "Inativar envio")
-    @PostMapping("/deliveries/inactivate/{id}")
+    @PostMapping("/shipmentsStatus/inactivate/{id}")
     public ResponseEntity<HttpStatus> inactivate(@PathVariable("id") String id) {
         shipmentService.inactivate(id);
         return new ResponseEntity<>(NO_CONTENT);
     }*/
 
-  /*@GetMapping("/deliveries/published")
-  public ResponseEntity<List<Delivery>> findByPublished() {
+  /*@GetMapping("/shipmentsStatus/published")
+  public ResponseEntity<List<ShipmentStatus>> findByPublished() {
     try {
-      List<Delivery> deliveries = shipmentRepository.findByPublished(true);
+      List<ShipmentStatus> shipmentsStatus = shipmentRepository.findByPublished(true);
 
-      if (deliveries.isEmpty()) {
+      if (shipmentsStatus.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
       }
-      return new ResponseEntity<>(deliveries, HttpStatus.OK);
+      return new ResponseEntity<>(shipmentsStatus, HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }

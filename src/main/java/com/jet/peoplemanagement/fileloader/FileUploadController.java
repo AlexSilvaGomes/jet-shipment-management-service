@@ -81,11 +81,8 @@ public class FileUploadController {
                                                    @RequestParam String clientName) throws IOException {
 
         Instant init = Instant.now();
-
         Client client = new Client(clientId);
-        //Client client = new Client(String.valueOf(RandomUtils.nextInt()));
         client.setName(clientName);
-
         storageService.handleSingleFileCall(client, file);
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -99,8 +96,7 @@ public class FileUploadController {
 
         Instant init = Instant.now();
 
-        //Client client = new Client(clientId);
-        Client client = new Client(String.valueOf(RandomUtils.nextInt()));
+        Client client = new Client(clientId);
         client.setName(clientName);
 
         return storageService.storeAllFiles(files, client)

@@ -18,33 +18,33 @@ import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
-public class DeliveryService {
+public class ShipmentStatusService {
 
     @Autowired
-    DeliveryRepository deliveryRepository;
+    ShipmentStatusRepository deliveryRepository;
 
     @Autowired
     ShipmentService shipmentService;
 
-    public Page<DeliveryStatus> findAll(Integer pageNumber, Integer pageSize) {
-        Page<DeliveryStatus> pageable = deliveryRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
+    public Page<ShipmentStatus> findAll(Integer pageNumber, Integer pageSize) {
+        Page<ShipmentStatus> pageable = deliveryRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
 
-        if (!pageable.hasContent()) throw new EntityNotFoundException(DeliveryStatus.class);
+        if (!pageable.hasContent()) throw new EntityNotFoundException(ShipmentStatus.class);
 
         return pageable;
     }
 
-    public DeliveryStatus findById(String id) {
-        Optional<DeliveryStatus> deliveryData = deliveryRepository.findById(id);
+    public ShipmentStatus findById(String id) {
+        Optional<ShipmentStatus> deliveryData = deliveryRepository.findById(id);
 
         if (deliveryData.isPresent()) return deliveryData.get();
 
-        else throw new EntityNotFoundException(DeliveryStatus.class, "id", id);
+        else throw new EntityNotFoundException(ShipmentStatus.class, "id", id);
     }
 
-    public DeliveryStatus save(DeliveryStatus delivery) {
+    public ShipmentStatus save(ShipmentStatus delivery) {
         delivery.setCreatedAt(LocalDateTime.now());
-        DeliveryStatus deliveryResult = deliveryRepository.save(delivery);
+        ShipmentStatus deliveryResult = deliveryRepository.save(delivery);
         shipmentService.updateStatus(delivery.getStatus(), delivery.getShipmentCode());
         return deliveryResult;
     }
@@ -54,24 +54,24 @@ public class DeliveryService {
      * @param delivery
      * @return
      */
-    public DeliveryStatus justSave(DeliveryStatus delivery) {
+    public ShipmentStatus justSave(ShipmentStatus delivery) {
         delivery.setCreatedAt(LocalDateTime.now());
         return deliveryRepository.save(delivery);
     }
 
-    public DeliveryStatus update(String id, DeliveryStatus updatedDelivery) {
-        Optional<DeliveryStatus> deliveryData = deliveryRepository.findById(id);
+    public ShipmentStatus update(String id, ShipmentStatus updatedDelivery) {
+        Optional<ShipmentStatus> deliveryData = deliveryRepository.findById(id);
 
         if (deliveryData.isPresent()) {
-            DeliveryStatus dbDelivery = deliveryData.get();
+            ShipmentStatus dbDelivery = deliveryData.get();
             String ignored[] = {"id", "createdAt"};
             BeanUtils.copyProperties(updatedDelivery, dbDelivery, ignored);
             return deliveryRepository.save(dbDelivery);
-        } else throw new EntityNotFoundException(DeliveryStatus.class, "id", id);
+        } else throw new EntityNotFoundException(ShipmentStatus.class, "id", id);
     }
 
     public void deleteById(String id) {
-        DeliveryStatus document = findById(id);
+        ShipmentStatus document = findById(id);
         log.info("Deleting delivery with id {}", id);
         deliveryRepository.deleteById(document.getId());
     }
@@ -80,11 +80,11 @@ public class DeliveryService {
         deliveryRepository.deleteAll();
     }
 
-    public List<DeliveryStatus> findByShipmentCode(String shipmentCode) {
-        List<DeliveryStatus> deliveryData = deliveryRepository.findByShipmentCode(shipmentCode);
+    public List<ShipmentStatus> findByShipmentCode(String shipmentCode) {
+        List<ShipmentStatus> deliveryData = deliveryRepository.findByShipmentCode(shipmentCode);
 
         if (Collections.isEmpty(deliveryData))
-            throw new EntityNotFoundException(DeliveryStatus.class, "shipmentCode", shipmentCode);
+            throw new EntityNotFoundException(ShipmentStatus.class, "shipmentCode", shipmentCode);
         else return deliveryData;
     }
 }

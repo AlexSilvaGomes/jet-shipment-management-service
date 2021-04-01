@@ -1,6 +1,6 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.delivery.DeliveryStatus;
+import com.jet.peoplemanagement.delivery.ShipmentStatus;
 import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.BaseDocument;
 import com.jet.peoplemanagement.model.Client;
@@ -42,11 +42,10 @@ public class Shipment extends BaseDocument {
 
     @NotBlank
     private String zone;
-    private String receiverNeighbor;
 
+    private String receiverNeighbor;
     private String receiverName;
     private String receiverNickName;
-
     private String receiverAddress;
     private String receiverAddressComp;
     private String receiverCity;
@@ -54,5 +53,5 @@ public class Shipment extends BaseDocument {
 
     private DeliveryStatusEnum status = DeliveryStatusEnum.POSTADO;
 
-    private List<DeliveryStatus> deliveriesStatus;
+    private List<ShipmentStatus> shipmentsStatus;
 }

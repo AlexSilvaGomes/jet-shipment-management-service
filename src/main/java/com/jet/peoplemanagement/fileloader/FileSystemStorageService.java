@@ -1,7 +1,7 @@
 package com.jet.peoplemanagement.fileloader;
 
-import com.jet.peoplemanagement.delivery.DeliveryStatus;
-import com.jet.peoplemanagement.delivery.DeliveryService;
+import com.jet.peoplemanagement.delivery.ShipmentStatus;
+import com.jet.peoplemanagement.delivery.ShipmentStatusService;
 import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipment.Shipment;
@@ -25,20 +25,23 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
+
 @Service
 @Slf4j
 public class FileSystemStorageService implements StorageService {
 
     public static final String ERROR = "ERROR";
     public static final String ERROR_DIR = "error";
+    public static final String SYSTEM_ADMIN = "Administrador do sistema";
     private final Path rootLocation;
     private final ShipmentService shipService;
-    private final DeliveryService deliveryService;
+    private final ShipmentStatusService deliveryService;
     private final FileUploadService uploadService;
     private Path clientLocation;
 
     @Autowired
-    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, DeliveryService deliveryService, FileUploadService uploadService) {
+    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, ShipmentStatusService deliveryService, FileUploadService uploadService) {
         this.rootLocation = Paths.get(properties.getLocation());
         this.shipService = shipService;
         this.deliveryService = deliveryService;
@@ -124,7 +127,7 @@ public class FileSystemStorageService implements StorageService {
         try {
             fileSaved = storeOnDb(client, fileItem.toString());
             fileFromDisk = loadFromDisk(client, fileItem.toString()).toFile();
-            Shipment ship = createShipment(fileFromDisk);
+            Shipment ship = createShipment(client, fileFromDisk);
             saveFileUploadShipmentCode(fileSaved, ship);
             deleteFileFromDisk(fileFromDisk);
 
@@ -153,7 +156,7 @@ public class FileSystemStorageService implements StorageService {
             storeOnDisk(file, client);
             fileSaved = storeOnDb(client, file.getOriginalFilename());
             fileFromDisk = loadFromDisk(client, file.getOriginalFilename()).toFile();
-            Shipment ship = createShipment(fileFromDisk);
+            Shipment ship = createShipment(client, fileFromDisk);
             saveFileUploadShipmentCode(fileSaved, ship);
             deleteFileFromDisk(fileFromDisk);
 
@@ -196,19 +199,26 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Transactional
-    private Shipment createShipment(File fileFromDisk) throws IOException {
+    private Shipment createShipment(Client client, File fileFromDisk) throws IOException {
         Shipment ship = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
+        ship.setClient(client);
         Shipment shipSaved = shipService.save(ship);
-        DeliveryStatus delivery = new DeliveryStatus();
+        createShipmentStatus(shipSaved);
+        return ship;
+    }
+
+    private void createShipmentStatus(Shipment shipSaved) {
+        ShipmentStatus delivery = new ShipmentStatus();
         delivery.setShipmentCode(shipSaved.getShipmentCode());
         delivery.setStatus( DeliveryStatusEnum.POSTADO);
+        String name = nonNull(shipSaved.getClient()) ? shipSaved.getClient().getName() : SYSTEM_ADMIN;
+        delivery.setStatusResponsibleName(name);
         try {
             deliveryService.justSave(delivery);
         } catch (Exception e) {
             shipService.deleteById(shipSaved.getId());
             throw e;
         }
-        return ship;
     }
 
     private void updateFileUploadStatus(FileUpload fileSaved, String status, String message) {
