@@ -3,14 +3,18 @@ package com.jet.peoplemanagement.shipment;
 import com.jet.peoplemanagement.delivery.ShipmentStatusService;
 import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
+import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -26,7 +30,9 @@ public class ShipmentService {
     ShipmentStatusService deliveryService;
 
     public Page<Shipment> findAll(Integer pageNumber, Integer pageSize) {
-        Page<Shipment> pageable = shipmentRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
+        Page<Shipment> pageable = shipmentRepository.findAll(
+                PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize,
+                        Sort.Direction.DESC, "updatedAt"));
 
         if (!pageable.hasContent()) throw new EntityNotFoundException(Shipment.class);
 
@@ -74,6 +80,15 @@ public class ShipmentService {
 
         if (shipmentData.isPresent()) {
             return shipmentData.get();
+        } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
+    }
+
+    public Page<Shipment> findByShipmentCodeLike(String shipmentCode) {
+        List<Shipment> shipmentData = shipmentRepository.findByShipmentCodeLike(shipmentCode);
+
+        if (!Collections.isEmpty(shipmentData)) {
+            Page page = new PageImpl(shipmentData, PageRequest.of(0, shipmentData.size()), shipmentData.size());
+            return page;
         } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
     }
 

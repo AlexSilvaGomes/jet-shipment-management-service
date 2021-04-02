@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.List;
+
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -36,10 +38,17 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentData, OK);
     }
 
-    @GetMapping("/shipments/shipmentCode{shipmentCode}")
+    @GetMapping("/shipments/shipmentCode/{shipmentCode}")
     @ApiOperation(value = "Obter o envio pelo seu código")
     public ResponseEntity<Shipment> getShipmentByShipmentCode(@PathVariable("shipmentCode") String shipmentCode) {
         Shipment shipmentData = shipmentService.findByShipmentCode(shipmentCode);
+        return new ResponseEntity<>(shipmentData, OK);
+    }
+
+    @GetMapping("/shipments/shipmentCodeLike/{shipmentCode}")
+    @ApiOperation(value = "Obter o envio pelo seu código")
+    public ResponseEntity<Page<Shipment>> getShipmentByShipmentCodeLike(@PathVariable("shipmentCode") String shipmentCode) {
+        Page<Shipment> shipmentData = shipmentService.findByShipmentCodeLike(shipmentCode);
         return new ResponseEntity<>(shipmentData, OK);
     }
 
