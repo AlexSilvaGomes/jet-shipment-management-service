@@ -1,7 +1,7 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.delivery.ShipmentStatus;
-import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
+import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.BaseDocument;
 import com.jet.peoplemanagement.model.Client;
 import lombok.Getter;

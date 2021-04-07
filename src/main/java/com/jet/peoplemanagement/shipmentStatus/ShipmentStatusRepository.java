@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.delivery;
+package com.jet.peoplemanagement.shipmentStatus;
 
 
 import org.springframework.data.mongodb.repository.MongoRepository;

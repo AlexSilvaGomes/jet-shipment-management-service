@@ -1,7 +1,9 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.delivery.ShipmentStatusService;
-import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
+import com.jet.peoplemanagement.invoice.Invoice;
+import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatusService;
+import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -97,4 +99,10 @@ public class ShipmentService {
         currentShip.setStatus(status);//Atualizando com o último status
         save(currentShip);
     }
+
+    public List<Shipment> findByClient(Client client) {
+        List<Shipment> shipments = shipmentRepository.findByClient(client);
+        return shipments;
+    }
+
 }

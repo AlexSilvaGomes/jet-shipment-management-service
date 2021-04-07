@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.delivery;
+package com.jet.peoplemanagement.shipmentStatus;
 
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.shipment.ShipmentService;

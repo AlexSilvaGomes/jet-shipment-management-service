@@ -1,8 +1,8 @@
 package com.jet.peoplemanagement.fileloader;
 
-import com.jet.peoplemanagement.delivery.ShipmentStatus;
-import com.jet.peoplemanagement.delivery.ShipmentStatusService;
-import com.jet.peoplemanagement.delivery.DeliveryStatusEnum;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatusService;
+import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;

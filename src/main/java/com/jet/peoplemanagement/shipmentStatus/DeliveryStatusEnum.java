@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.delivery;
+package com.jet.peoplemanagement.shipmentStatus;
 
 public enum DeliveryStatusEnum {
 

@@ -1,11 +1,8 @@
-package com.jet.peoplemanagement.delivery;
+package com.jet.peoplemanagement.shipmentStatus;
 
 import com.jet.peoplemanagement.model.BaseDocument;
-import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.shipment.Shipment;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotBlank;
