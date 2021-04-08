@@ -65,7 +65,7 @@ public class InvoiceItemsService {
     }
 
     public List<InvoiceItems> findByInvoice(Invoice invoice) {
-        List<InvoiceItems> invoiceData = itemsRepository.findByInvoice(invoice);
+        List<InvoiceItems> invoiceData = itemsRepository.findByInvoiceId(invoice.getId());
 
         if (Collections.isEmpty(invoiceData))
             throw new EntityNotFoundException(InvoiceItems.class, "invoice id", invoice.getId());

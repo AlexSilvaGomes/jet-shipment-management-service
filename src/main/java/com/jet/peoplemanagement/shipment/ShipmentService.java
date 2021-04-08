@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -100,8 +101,17 @@ public class ShipmentService {
         save(currentShip);
     }
 
-    public List<Shipment> findByClient(Client client) {
-        List<Shipment> shipments = shipmentRepository.findByClient(client);
+    public List<Shipment> findByClientAndOptionalLastInvoice(Client client, Optional<Invoice> lastInvoice) {
+
+        LocalDate today = LocalDate.now();
+        List<Shipment> shipments;
+
+        if(lastInvoice.isPresent()) {
+            shipments = shipmentRepository.findByClientAndCreatedAtBetween(client, lastInvoice.get().getPeriodEnd(), today);
+        } else{
+            shipments = shipmentRepository.findByClient(client);
+        }
+
         return shipments;
     }
 

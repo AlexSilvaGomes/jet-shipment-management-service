@@ -30,14 +30,12 @@ public class InvoiceController {
     @Autowired
     ShipmentService shipService;
 
-    @GetMapping("/invoices/view")
-    @ApiOperation(value = "Obter todas as faturasa paginando")
-    public ResponseEntity<List<Invoice>> viewByClient(Client client) {
-        List<Shipment> invoices = invoiceService.viewByClient(client);
-
-
-
-        return new ResponseEntity<>(pageable, OK);
+    @GetMapping("/invoices/view/clientId/{clientId}")
+    @ApiOperation(value = "Visualizar a fatura por cliente")
+    public ResponseEntity<Invoice> viewLastByClient(@PathVariable("clientId") String clientId) {
+        Client client = new Client(clientId);
+        Invoice invoice = invoiceService.viewByClient(client);
+        return new ResponseEntity<>(invoice, OK);
     }
 
     @GetMapping("/invoices")
@@ -54,9 +52,10 @@ public class InvoiceController {
         return new ResponseEntity<>(invoiceData, OK);
     }
 
-    @GetMapping("/invoices/invoiceCode/{invoiceCode}")
+    @GetMapping("/invoices/clientId/{clientId}")
     @ApiOperation(value = "Obter fatura pelo seu cliente")
-    public ResponseEntity<List<Invoice>> getInvoiceByClient(@PathVariable("client") Client client) {
+    public ResponseEntity<List<Invoice>> getInvoiceByClient(@PathVariable("client") String clientId) {
+        Client client = new Client(clientId);
         List<Invoice> invoiceData = invoiceService.findByClient(client);
         return new ResponseEntity<>(invoiceData, OK);
     }

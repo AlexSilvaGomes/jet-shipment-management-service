@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -105,13 +105,27 @@ public class InvoiceService {
     }
 
     public Invoice viewByClient(Client client) {
-        List<Shipment> shipments = shipService.findByClient(client);
+
+        Optional<Invoice> lastInvoice = invoiceRepository.findTopByOrderByUpdatedAtDesc();
+
+        List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
+
         Invoice invoice = new Invoice();
-        Long totalItems = shipments.stream().filter(shipment -> shipment.getStatus().equals(DeliveryStatusEnum.ENTREGUE)).count();
-        invoice.setTotalItems(totalItems.intValue());
-        Double amount = totalItems * 13.00;
+        List<InvoiceItems> items = shipments.stream()
+                .filter(shipment -> shipment.getStatus().equals(DeliveryStatusEnum.ENTREGUE))
+                .map(ship ->  {
+                    return new InvoiceItems(invoice.getId(), ship.getShipmentCode(), ship.getSku());
+                }).collect(Collectors.toList());
+
+        invoice.setTotalItems(items.size());
+        Double amount = invoice.getTotalItems() * 13.00;
         invoice.setAmount(BigDecimal.valueOf(amount));
-        invoice.setItems();
+
+        invoice.setItems(items);
+        invoice.setClient(client);
+
+        save(invoice);
+
         return invoice;
     }
 }

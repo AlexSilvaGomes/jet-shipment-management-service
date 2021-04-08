@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface InvoiceRepository extends MongoRepository<Invoice, String> {
     List<Invoice> findByClient(Client client);
     List<Invoice> findByStatus(InvoiceStatusEnum status);
+    Optional<Invoice> findTopByOrderByUpdatedAtDesc();
 }
