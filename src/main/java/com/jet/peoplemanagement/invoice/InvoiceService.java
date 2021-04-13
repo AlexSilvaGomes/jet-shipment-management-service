@@ -2,6 +2,7 @@ package com.jet.peoplemanagement.invoice;
 
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.service.ClientService;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,6 +37,9 @@ public class InvoiceService {
 
     @Autowired
     ShipmentService shipService;
+
+    @Autowired
+    ClientService clientService;
 
     public Page<Invoice> findAll(Integer pageNumber, Integer pageSize) {
         Page<Invoice> pageable = invoiceRepository.findAll(
@@ -107,24 +113,40 @@ public class InvoiceService {
     public Invoice viewByClient(Client client) {
 
         Optional<Invoice> lastInvoice = invoiceRepository.findTopByOrderByUpdatedAtDesc();
-
         List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
+        Invoice invoice = buildInvoice(client, lastInvoice, shipments);
 
+        if(!lastInvoice.isPresent()){
+            save(invoice);
+        }
+
+        return invoice;
+    }
+
+    private Invoice buildInvoice(Client client, Optional<Invoice> lastInvoice, List<Shipment> shipments) {
         Invoice invoice = new Invoice();
+
         List<InvoiceItems> items = shipments.stream()
                 .filter(shipment -> shipment.getStatus().equals(DeliveryStatusEnum.ENTREGUE))
                 .map(ship ->  {
                     return new InvoiceItems(invoice.getId(), ship.getShipmentCode(), ship.getSku());
                 }).collect(Collectors.toList());
 
+        if(lastInvoice.isPresent()) {
+            invoice.setPeriodInit(lastInvoice.get().getPeriodEnd());
+            invoice.setPeriodEnd(LocalDate.now());
+        } else{
+            if(!shipments.isEmpty()){
+                invoice.setPeriodInit(shipments.stream().min(Comparator.comparing(Shipment::getUpdatedAt)).get().getUpdatedAt().toLocalDate());
+                invoice.setPeriodEnd(shipments.stream().max(Comparator.comparing(Shipment::getUpdatedAt)).get().getUpdatedAt().toLocalDate());
+            }
+        }
+
         invoice.setTotalItems(items.size());
         Double amount = invoice.getTotalItems() * 13.00;
         invoice.setAmount(BigDecimal.valueOf(amount));
-
         invoice.setItems(items);
-        invoice.setClient(client);
-
-        save(invoice);
+        invoice.setClient(clientService.findById(client.getId()));
 
         return invoice;
     }
