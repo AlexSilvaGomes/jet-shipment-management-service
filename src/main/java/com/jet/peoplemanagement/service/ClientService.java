@@ -1,20 +1,24 @@
 package com.jet.peoplemanagement.service;
 
 import com.jet.peoplemanagement.model.UserProfile;
+import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.repository.ClientRepository;
 import com.jet.peoplemanagement.user.JetUser;
 import com.jet.peoplemanagement.user.UserType;
+import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static com.jet.peoplemanagement.util.Constants.MUDAR_123;
@@ -86,10 +90,21 @@ public class ClientService {
         clientRepository.save(document);
     }
 
+    public Page findByCnpjLike(String cnpj){
+        List<Client> documents = clientRepository.findByCnpjLike(cnpj);
+
+        if (!Collections.isEmpty(documents)) {
+            Page page = new PageImpl(documents, PageRequest.of(0, documents.size()), documents.size());
+            return page;
+        } else throw new EntityNotFoundException(Shipment.class, "cnpj", cnpj);
+
+    }
+
     public Client findByCnpj(String cnpj){
         Optional<Client> document = clientRepository.queroMeuCnpj(cnpj);
-        if(document.isPresent()) return document.get();
-        else throw new EntityNotFoundException(Client.class, "cnpj", cnpj);
+        if (document.isPresent()) {
+            return document.get();
+        } else throw new EntityNotFoundException(Client.class, "cnpj", cnpj);
     }
 
     public UserProfile findByEmail(String email){
@@ -100,5 +115,12 @@ public class ClientService {
 
     public void deleteAll() {
         clientRepository.deleteAll();
+    }
+
+    public Client findByCompanyName(String companyName) {
+        List<Client> document = clientRepository.findByCompanyRegexIgnoreCase(companyName, PageRequest.of(0, 1));
+        if (!Collections.isEmpty(document)) {
+            return document.stream().findFirst().get();
+        } else throw new EntityNotFoundException(Client.class, "companyName", companyName);
     }
 }

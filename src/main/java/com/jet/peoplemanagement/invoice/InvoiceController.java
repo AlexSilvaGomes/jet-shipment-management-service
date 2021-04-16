@@ -1,7 +1,6 @@
 package com.jet.peoplemanagement.invoice;
 
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +56,20 @@ public class InvoiceController {
     public ResponseEntity<List<Invoice>> getInvoiceByClient(@PathVariable("client") String clientId) {
         Client client = new Client(clientId);
         List<Invoice> invoiceData = invoiceService.findByClient(client);
+        return new ResponseEntity<>(invoiceData, OK);
+    }
+
+    @GetMapping("/invoices/filter")
+    @ApiOperation(value = "Obter fatura pelo seu cliente")
+    public ResponseEntity<Page<Invoice>> getInvoiceByCnpj(@RequestParam String cnpj) {
+        Page invoiceData = invoiceService.findByCnpj(cnpj);
+        return new ResponseEntity<>(invoiceData, OK);
+    }
+
+    @GetMapping("/invoices/filterCompanyName")
+    @ApiOperation(value = "Obter fatura pelo nome da empresa")
+    public ResponseEntity<Page<Invoice>> getInvoiceByCompanyName(@RequestParam String companyName) {
+        Page invoiceData = invoiceService.findByCompanyName(companyName);
         return new ResponseEntity<>(invoiceData, OK);
     }
 

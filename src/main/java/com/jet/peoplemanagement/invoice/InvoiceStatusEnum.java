@@ -3,6 +3,7 @@ package com.jet.peoplemanagement.invoice;
 public enum InvoiceStatusEnum {
 
     GERADO("Gerado", "Fatura gerada para visualização ou envio ao cliente"),
+    EM_ATRASO("Em atraso", "Fatura está em atraso"),
     PAGO("Pago", "Fatura paga / finalizada"),
     CANCELADO("Cancelado", "Fatura cancelada"),
     ;

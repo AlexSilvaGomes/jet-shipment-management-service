@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -104,6 +105,26 @@ public class InvoiceService {
         } else throw new EntityNotFoundException(Invoice.class, "client id", client.getId());
     }
 
+    public Page findByCnpj(String cnpj) {
+        Client client = clientService.findByCnpj(cnpj);
+        List<Invoice> invoiceData = invoiceRepository.findByClient(client);
+
+        if (!Collections.isEmpty(invoiceData)) {
+            Page page = new PageImpl(invoiceData, PageRequest.of(0, invoiceData.size()), invoiceData.size());
+            return page;
+        } else throw new EntityNotFoundException(Invoice.class, "client cnpj", cnpj);
+    }
+
+    public Page findByCompanyName(String companyName) {
+        Client client = clientService.findByCompanyName(companyName);
+        List<Invoice> invoiceData = invoiceRepository.findByClient(client);
+
+        if (!Collections.isEmpty(invoiceData)) {
+            Page page = new PageImpl(invoiceData, PageRequest.of(0, invoiceData.size()), invoiceData.size());
+            return page;
+        } else throw new EntityNotFoundException(Invoice.class, "client companyName", companyName);
+    }
+
     public void updateStatus(String id, InvoiceStatusEnum status) {
         Invoice currentInvoice = findById(id);
         currentInvoice.setStatus(status);
@@ -150,4 +171,6 @@ public class InvoiceService {
 
         return invoice;
     }
+
+
 }
