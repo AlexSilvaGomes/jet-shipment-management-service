@@ -37,6 +37,14 @@ public class InvoiceController {
         return new ResponseEntity<>(invoice, OK);
     }
 
+    @GetMapping("/invoices/generate/clientId/{clientId}")
+    @ApiOperation(value = "Emitir fatura por cliente")
+    public ResponseEntity<Invoice> generateInvoiceByClient(@PathVariable("clientId") String clientId) {
+        Client client = new Client(clientId);
+        Invoice invoice = invoiceService.generateByClient(client);
+        return new ResponseEntity<>(invoice, OK);
+    }
+
     @GetMapping("/invoices")
     @ApiOperation(value = "Obter todas as faturas paginando")
     public ResponseEntity<Page<Invoice>> getAllInvoices(@RequestParam Integer pageNumber, @RequestParam(required = true) Integer pageSize) {
@@ -108,10 +116,17 @@ public class InvoiceController {
         return new ResponseEntity<>(NO_CONTENT);
     }
 
-    @ApiOperation(value = "Inativar fatura")
-    @PostMapping("/invoices/inactivate/{id}")
+    @ApiOperation(value = "Pagar fatura")
+    @GetMapping("/invoices/pay/{id}")
     public ResponseEntity<HttpStatus> pay(@PathVariable("id") String id) {
         invoiceService.updateStatus(id, InvoiceStatusEnum.PAGO);
+        return new ResponseEntity<>(NO_CONTENT);
+    }
+
+    @ApiOperation(value = "Não pagar fatura")
+    @GetMapping("/invoices/cancel/{id}")
+    public ResponseEntity<HttpStatus> cancel(@PathVariable("id") String id) {
+        invoiceService.updateStatus(id, InvoiceStatusEnum.CANCELADO);
         return new ResponseEntity<>(NO_CONTENT);
     }
 

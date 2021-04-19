@@ -107,7 +107,7 @@ public class ShipmentService {
         List<Shipment> shipments;
 
         if(lastInvoice.isPresent()) {
-            shipments = shipmentRepository.findByClientAndCreatedAtBetween(client, lastInvoice.get().getPeriodEnd(), today);
+            shipments = shipmentRepository.findByClientAndCreatedAtBetween(client, lastInvoice.get().getPeriodEnd(), today.plusDays(1));
         } else{
             shipments = shipmentRepository.findByClient(client);
         }

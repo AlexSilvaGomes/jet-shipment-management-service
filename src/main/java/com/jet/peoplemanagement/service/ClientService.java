@@ -64,7 +64,7 @@ public class ClientService {
 
         if (clientData.isPresent()) {
             Client dbClient = clientData.get();
-            String ignored [] = {"id", "createdAt", "activated"};
+            String ignored[] = {"id", "createdAt", "activated"};
             BeanUtils.copyProperties(updatedClient, dbClient, ignored);
             return clientRepository.save(dbClient);
         } else throw new EntityNotFoundException(Client.class, "id", id);
@@ -90,7 +90,7 @@ public class ClientService {
         clientRepository.save(document);
     }
 
-    public Page findByCnpjLike(String cnpj){
+    public Page findByCnpjLike(String cnpj) {
         List<Client> documents = clientRepository.findByCnpjLike(cnpj);
 
         if (!Collections.isEmpty(documents)) {
@@ -100,16 +100,16 @@ public class ClientService {
 
     }
 
-    public Client findByCnpj(String cnpj){
+    public Client findByCnpj(String cnpj) {
         Optional<Client> document = clientRepository.queroMeuCnpj(cnpj);
         if (document.isPresent()) {
             return document.get();
         } else throw new EntityNotFoundException(Client.class, "cnpj", cnpj);
     }
 
-    public UserProfile findByEmail(String email){
+    public UserProfile findByEmail(String email) {
         Optional<Client> profile = clientRepository.queroByEmail(email);
-        if(profile.isPresent()) return (UserProfile) profile.get();
+        if (profile.isPresent()) return (UserProfile) profile.get();
         else throw new EntityNotFoundException(Client.class, "email", email);
     }
 

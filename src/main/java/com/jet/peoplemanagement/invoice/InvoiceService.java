@@ -144,6 +144,16 @@ public class InvoiceService {
         return invoice;
     }
 
+    public Invoice generateByClient(Client client) {
+
+        Optional<Invoice> lastInvoice = invoiceRepository.findTopByOrderByUpdatedAtDesc();
+        List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
+        Invoice invoice = buildInvoice(client, lastInvoice, shipments);
+        save(invoice);
+
+        return invoice;
+    }
+
     private Invoice buildInvoice(Client client, Optional<Invoice> lastInvoice, List<Shipment> shipments) {
         Invoice invoice = new Invoice();
 
