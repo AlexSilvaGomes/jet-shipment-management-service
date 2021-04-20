@@ -1,5 +1,6 @@
 package com.jet.peoplemanagement.invoice;
 
+import com.jet.peoplemanagement.exception.BusinessException;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.service.ClientService;
@@ -133,7 +134,7 @@ public class InvoiceService {
 
     public Invoice viewByClient(Client client) {
 
-        Optional<Invoice> lastInvoice = invoiceRepository.findTopByOrderByUpdatedAtDesc();
+        Optional<Invoice> lastInvoice = invoiceRepository.findTop1ByClient(client, Sort.by(Sort.Direction.DESC, "updatedAt"));
         List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
         Invoice invoice = buildInvoice(client, lastInvoice, shipments);
 
@@ -145,8 +146,13 @@ public class InvoiceService {
     }
 
     public Invoice generateByClient(Client client) {
+        Optional<Invoice> lastInvoice = invoiceRepository.findTop1ByClient(client,
+                Sort.by(Sort.Direction.DESC, "updatedAt"));
 
-        Optional<Invoice> lastInvoice = invoiceRepository.findTopByOrderByUpdatedAtDesc();
+        if(lastInvoice.isPresent() && lastInvoice.get().getPeriodEnd().equals(LocalDate.now())){
+            throw new BusinessException("Fatura já gerada para o período!");
+        }
+
         List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
         Invoice invoice = buildInvoice(client, lastInvoice, shipments);
         save(invoice);

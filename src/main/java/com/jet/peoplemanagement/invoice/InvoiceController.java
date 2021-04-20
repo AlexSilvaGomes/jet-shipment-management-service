@@ -123,6 +123,13 @@ public class InvoiceController {
         return new ResponseEntity<>(NO_CONTENT);
     }
 
+    @ApiOperation(value = "Desfazer pagamento fatura")
+    @GetMapping("/invoices/unpay/{id}")
+    public ResponseEntity<HttpStatus> unpay(@PathVariable("id") String id) {
+        invoiceService.updateStatus(id, InvoiceStatusEnum.GERADO);
+        return new ResponseEntity<>(NO_CONTENT);
+    }
+
     @ApiOperation(value = "Pagar todas faturas")
     @PostMapping("/invoices/payAll")
     public ResponseEntity<HttpStatus> payAll(@RequestBody() List<String> listOfId) {
