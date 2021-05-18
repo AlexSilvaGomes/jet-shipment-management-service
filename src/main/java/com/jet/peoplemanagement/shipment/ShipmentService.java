@@ -2,6 +2,7 @@ package com.jet.peoplemanagement.shipment;
 
 import com.jet.peoplemanagement.invoice.Invoice;
 import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
 import com.jet.peoplemanagement.shipmentStatus.ShipmentStatusService;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
@@ -34,6 +35,16 @@ public class ShipmentService {
 
     public Page<Shipment> findAll(Integer pageNumber, Integer pageSize) {
         Page<Shipment> pageable = shipmentRepository.findAll(
+                PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize,
+                        Sort.Direction.DESC, "updatedAt"));
+
+        if (!pageable.hasContent()) throw new EntityNotFoundException(Shipment.class);
+
+        return pageable;
+    }
+
+    public Page<Shipment> findAllByClient(Client client, Integer pageNumber, Integer pageSize) {
+        Page<Shipment> pageable = shipmentRepository.findAllByClient(client,
                 PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize,
                         Sort.Direction.DESC, "updatedAt"));
 
@@ -86,6 +97,16 @@ public class ShipmentService {
         } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
     }
 
+    public List<Shipment> findByProviderAndStatus(String providerId, DeliveryStatusEnum status) {
+        LocalDate today = LocalDate.now();
+
+        List<Shipment> shipments = shipmentRepository.
+                findByCurrentProviderIdAndStatusAndCreatedAtBetween(providerId, status, today, today.plusDays(1));
+        //List<Shipment> shipments = shipmentRepository.findByProvider(provider);
+
+        return shipments;
+    }
+
     public Page<Shipment> findByShipmentCodeLike(String shipmentCode) {
         List<Shipment> shipmentData = shipmentRepository.findByShipmentCodeLike(shipmentCode);
 
@@ -95,9 +116,19 @@ public class ShipmentService {
         } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
     }
 
-    public void updateStatus(DeliveryStatusEnum status, String shipmentCode) {
-        Shipment currentShip = findByShipmentCode(shipmentCode);
-        currentShip.setStatus(status);//Atualizando com o último status
+    public Page<Shipment> findByShipmentCodeLikeAndClient(String shipmentCode, Client client) {
+        List<Shipment> shipmentData = shipmentRepository.findByShipmentCodeLikeAndClient(shipmentCode, client);
+
+        if (!Collections.isEmpty(shipmentData)) {
+            Page page = new PageImpl(shipmentData, PageRequest.of(0, shipmentData.size()), shipmentData.size());
+            return page;
+        } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
+    }
+
+    public void updateStatus(ShipmentStatus status) {
+        Shipment currentShip = findByShipmentCode(status.getShipmentCode());
+        currentShip.setStatus(status.getStatus());//Atualizando com o último status
+        currentShip.setCurrentProviderId(status.getStatusResponsibleId());
         save(currentShip);
     }
 
@@ -106,9 +137,9 @@ public class ShipmentService {
         LocalDate today = LocalDate.now();
         List<Shipment> shipments;
 
-        if(lastInvoice.isPresent()) {
+        if (lastInvoice.isPresent()) {
             shipments = shipmentRepository.findByClientAndCreatedAtBetween(client, lastInvoice.get().getPeriodEnd(), today.plusDays(1));
-        } else{
+        } else {
             shipments = shipmentRepository.findByClient(client);
         }
 

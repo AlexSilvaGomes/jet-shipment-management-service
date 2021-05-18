@@ -42,10 +42,10 @@ public class ShipmentStatusService {
         else throw new EntityNotFoundException(ShipmentStatus.class, "id", id);
     }
 
-    public ShipmentStatus save(ShipmentStatus delivery) {
-        delivery.setCreatedAt(LocalDateTime.now());
-        ShipmentStatus deliveryResult = deliveryRepository.save(delivery);
-        shipmentService.updateStatus(delivery.getStatus(), delivery.getShipmentCode());
+    public ShipmentStatus save(ShipmentStatus status) {
+        status.setCreatedAt(LocalDateTime.now());
+        ShipmentStatus deliveryResult = deliveryRepository.save(status);
+        shipmentService.updateStatus(status);
         return deliveryResult;
     }
 

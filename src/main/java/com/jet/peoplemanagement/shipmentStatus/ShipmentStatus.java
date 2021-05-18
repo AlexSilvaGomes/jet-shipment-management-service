@@ -23,6 +23,9 @@ public class ShipmentStatus extends BaseDocument {
     @NotBlank
     private String statusResponsibleName;
 
+    @NotBlank
+    private String statusResponsibleId;
+
     //private String providerConferenceCpf;
 
     @NotNull

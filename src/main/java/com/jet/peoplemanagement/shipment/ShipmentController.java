@@ -1,7 +1,10 @@
 package com.jet.peoplemanagement.shipment;
 
+import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,10 +29,21 @@ public class ShipmentController {
 
     @GetMapping("/shipments")
     @ApiOperation(value = "Obter todos os envios paginando")
-    public ResponseEntity<Page<Shipment>> getAllShipments(@RequestParam Integer pageNumber, @RequestParam(required = true) Integer pageSize) {
-        Page<Shipment> pageable = shipmentService.findAll(pageNumber, pageSize);
+    public ResponseEntity<Page<Shipment>> getAllShipments(@RequestParam(required = false) String clientId, @RequestParam Integer pageNumber, @RequestParam(required = true) Integer pageSize) {
+
+        Page<Shipment> pageable = StringUtils.isEmpty(clientId) ?
+                shipmentService.findAll(pageNumber, pageSize) :
+                shipmentService.findAllByClient(new Client(clientId), pageNumber, pageSize);
+
         return new ResponseEntity<>(pageable, OK);
     }
+
+/*    @GetMapping("/shipments/client")
+    @ApiOperation(value = "Obter todos os envios paginando por cliente")
+    public ResponseEntity<Page<Shipment>> getAllShipmentsByClient(@RequestBody Client client, @RequestParam Integer pageNumber, @RequestParam(required = true) Integer pageSize) {
+        Page<Shipment> pageable = shipmentService.findAllByClient(client, pageNumber, pageSize);
+        return new ResponseEntity<>(pageable, OK);
+    }*/
 
     @GetMapping("/shipments/{id}")
     @ApiOperation(value = "Obter o envio pelo seu id")
@@ -41,14 +55,32 @@ public class ShipmentController {
     @GetMapping("/shipments/shipmentCode/{shipmentCode}")
     @ApiOperation(value = "Obter o envio pelo seu código")
     public ResponseEntity<Shipment> getShipmentByShipmentCode(@PathVariable("shipmentCode") String shipmentCode) {
+
         Shipment shipmentData = shipmentService.findByShipmentCode(shipmentCode);
         return new ResponseEntity<>(shipmentData, OK);
     }
 
-    @GetMapping("/shipments/shipmentCodeLike/{shipmentCode}")
+    @GetMapping("/shipments/filterByProvider")
     @ApiOperation(value = "Obter o envio pelo seu código")
-    public ResponseEntity<Page<Shipment>> getShipmentByShipmentCodeLike(@PathVariable("shipmentCode") String shipmentCode) {
-        Page<Shipment> shipmentData = shipmentService.findByShipmentCodeLike(shipmentCode);
+    public ResponseEntity<List<Shipment>> getShipmentByProvider(@RequestParam("providerId") String providerId, @RequestParam("status") DeliveryStatusEnum status) {
+        List<Shipment> shipmentData = shipmentService.findByProviderAndStatus(providerId, status);
+        return new ResponseEntity<>(shipmentData, OK);
+    }
+
+//    @GetMapping("/shipments/filter")
+//    @ApiOperation(value = "Obter o envio pelo seu código")
+//    public ResponseEntity<Shipment> filterShipmentByShipmentCode(@RequestParam("shipCode") String shipmentCode) {
+//        Shipment shipmentData = shipmentService.findByShipmentCode(shipmentCode);
+//        return new ResponseEntity<>(shipmentData, OK);
+//    }
+
+    @GetMapping("/shipments/shipmentCodeLike/{shipmentCode}")
+    @ApiOperation(value = "Obter os envios pelo seu código operador like  e clientId opcional")
+    public ResponseEntity<Page<Shipment>> getShipmentByShipmentCodeLike(@RequestParam(required = false) String clientId, @PathVariable("shipmentCode") String shipmentCode) {
+
+        Page<Shipment> shipmentData = StringUtils.isEmpty(clientId) ? shipmentService.findByShipmentCodeLike(shipmentCode) :
+                shipmentService.findByShipmentCodeLikeAndClient(shipmentCode, new Client(clientId));
+
         return new ResponseEntity<>(shipmentData, OK);
     }
 

@@ -2,6 +2,7 @@ package com.jet.peoplemanagement.controller;
 
 import com.jet.peoplemanagement.model.Provider;
 import com.jet.peoplemanagement.service.ProviderService;
+import com.jet.peoplemanagement.user.UserType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class ProviderController {
     @ApiOperation(value = "Criar um novo provedor de serviço")
     @PostMapping("/providers")
     public ResponseEntity<Provider> createProvider(@Valid @RequestBody Provider provider) {
+        provider.setType(UserType.PROVIDER.getName());
         Provider _provider = providerService.save(provider);
         return new ResponseEntity<>(_provider, HttpStatus.CREATED);
     }

@@ -1,9 +1,9 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
-import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.BaseDocument;
 import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
+import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -23,6 +23,9 @@ public class Shipment extends BaseDocument {
     @NotNull
     @Indexed
     private Client client;
+
+    @Indexed
+    private String currentProviderId;
 
     private String productName;
     private String productDesc;

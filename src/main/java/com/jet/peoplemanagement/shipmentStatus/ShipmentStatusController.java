@@ -47,8 +47,8 @@ public class ShipmentStatusController {
 
     @ApiOperation(value = "Criar um novo envio")
     @PostMapping("/shipmentsStatus")
-    public ResponseEntity<ShipmentStatus> create(@Valid @RequestBody ShipmentStatus delivery) {
-        ShipmentStatus _shipment = shipmentStatusService.save(delivery);
+    public ResponseEntity<ShipmentStatus> create(@Valid @RequestBody ShipmentStatus shipmentStatus) {
+        ShipmentStatus _shipment = shipmentStatusService.save(shipmentStatus);
         return new ResponseEntity<>(_shipment, HttpStatus.CREATED);
     }
 

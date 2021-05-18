@@ -4,6 +4,7 @@ import com.jet.peoplemanagement.model.Provider;
 import com.jet.peoplemanagement.service.ProviderService;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.fileloader.StorageProperties;
+import com.jet.peoplemanagement.user.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -41,18 +42,18 @@ public class PeopleManagementApplication implements CommandLineRunner {
 		} catch (UsernameNotFoundException e) {
 			Provider provider = new Provider(){
 				{
-					setCpf("33313868800");
+					setCpf("00000000000");
 					setName("Administrador");
 					setMobile("11971937005");
 					setEmail(ADMIN_ADMIN_COM);
 					setLevel("1");
 					setZone("ALL");
-					setType("Admin");
+					setType(UserType.ADMIN.getName());
 					setBank("Any");
 					setAccount("0000");
 					setAgency("0000");
 					setBirthDate(LocalDateTime.now());
-					setImg("profile-user.png");
+					setImg("svg/delivery-boy.svg");
 				}
 			};
 			providerService.save(provider);

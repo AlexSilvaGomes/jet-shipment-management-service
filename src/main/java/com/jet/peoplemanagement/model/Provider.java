@@ -16,6 +16,12 @@ import java.time.LocalDateTime;
 @TypeAlias("Provider")
 public class Provider extends BaseDocument implements UserProfile {
 
+    public Provider(String providerId) {
+        this.id = providerId;
+    }
+
+    public Provider() {}
+
     @NotBlank
     private String name;
     private String mei;
@@ -61,5 +67,6 @@ public class Provider extends BaseDocument implements UserProfile {
 
     @NotNull
     private LocalDateTime birthDate;
+
 
 }

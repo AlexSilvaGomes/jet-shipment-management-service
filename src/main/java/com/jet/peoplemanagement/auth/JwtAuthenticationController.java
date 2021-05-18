@@ -7,8 +7,12 @@ import com.jet.peoplemanagement.service.ClientService;
 import com.jet.peoplemanagement.service.ProviderService;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.user.UserType;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.impl.DefaultClaims;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,10 +22,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.jet.peoplemanagement.exception.ExceptionType.HTTP_INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
 @Api(value = "Controle para autenticação de usuário")
+@Slf4j
 public class JwtAuthenticationController {
 
     //@Autowired
@@ -50,15 +64,6 @@ public class JwtAuthenticationController {
         if (!userDetails.getPassword().equals(credentials.getPassword()))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Senha inválida, por favor tente novamente.");
 
-
-       /* if ("provider".equals(credencials.getUserType())) {
-            userDetails = providerService.loadUserByUsername(credencials.getUsername());
-        } else if ("client".equals(credencials.getUserType())) {
-            userDetails = clientService.loadUserByUsername(credencials.getUsername());
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("userType is invalid");
-        }
-*/
         final String token = jwtTokenUtil.generateToken(userDetails);
         CredentialUser credentialUser = (CredentialUser)userDetails;
         UserResponse response = null;
@@ -72,6 +77,28 @@ public class JwtAuthenticationController {
 
         response = getUserResponse(userDetails, token, credentialUser, profile);
         return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(value = "/refreshToken", method = RequestMethod.GET)
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        // From the HttpRequest get the claims
+
+        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+
+        if(Objects.isNull(claims)){
+            return new ResponseEntity<>("{\"message\":\"Not correctly called refreshToken\"}",HttpStatus.BAD_REQUEST);
+        }
+        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+        String token = jwtTokenUtil.doGenerateToken(expectedMap, expectedMap.get("sub").toString());
+        return ResponseEntity.ok(new AuthenticationResponse(token));
+    }
+
+    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            expectedMap.put(entry.getKey(), entry.getValue());
+        }
+        return expectedMap;
     }
 
     private UserResponse getUserResponse(UserDetails userDetails, String token, CredentialUser credentialUser,

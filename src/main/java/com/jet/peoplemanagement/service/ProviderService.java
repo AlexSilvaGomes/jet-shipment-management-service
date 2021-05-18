@@ -50,7 +50,7 @@ public class ProviderService {
         provider.setCreatedAt(LocalDateTime.now());
         provider.setActivated(true);
         Provider savedProvider = providerRepository.save(provider);
-        JetUser jetUser = new JetUser(provider.getEmail(), MUDAR_123, UserType.PROVIDER.getName());
+        JetUser jetUser = new JetUser(provider.getEmail(), MUDAR_123, provider.getType());
         userService.save(jetUser);
         return savedProvider;
     }
