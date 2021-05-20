@@ -1,8 +1,6 @@
 package com.jet.peoplemanagement.user;
 
 import com.jet.peoplemanagement.auth.CredentialUser;
-import com.jet.peoplemanagement.user.JetUser;
-import com.jet.peoplemanagement.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,10 +18,10 @@ public class UserServiceJWT implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return getByUsername(email);
+        return getCredentialByUsername(email);
     }
 
-    public CredentialUser getByUsername(String username) {
+    public CredentialUser getCredentialByUsername(String username) {
 
         Optional<JetUser> jetUser = userRepository.getByUsername(username);
 
@@ -34,9 +32,24 @@ public class UserServiceJWT implements UserDetailsService {
         } else throw new UsernameNotFoundException("User not found with username: " + username);
     }
 
+    public JetUser getJetUserByUsername(String username) {
+
+        Optional<JetUser> jetUser = userRepository.getByUsername(username);
+
+        if (jetUser.isPresent()) {
+            return jetUser.get();
+        } else throw new UsernameNotFoundException("User not found with username: " + username);
+    }
+
     public JetUser save(JetUser user) {
         user.setCreatedAt(LocalDateTime.now());
         return userRepository.save(user);
+    }
+
+    public void deleteByUsername(String username) {
+
+        JetUser currentUser = getJetUserByUsername(username);
+        userRepository.delete(currentUser);
     }
 
 

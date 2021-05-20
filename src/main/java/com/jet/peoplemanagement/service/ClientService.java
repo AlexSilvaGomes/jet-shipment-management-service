@@ -36,17 +36,13 @@ public class ClientService {
 
     public Page<Client> findAll(Integer pageNumber, Integer pageSize) {
         Page<Client> pageable = clientRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
-
         if (!pageable.hasContent()) throw new EntityNotFoundException(Client.class);
-
         return pageable;
     }
 
     public Client findById(String id) {
         Optional<Client> clientData = clientRepository.findById(id);
-
         if (clientData.isPresent()) return clientData.get();
-
         else throw new EntityNotFoundException(Client.class, "id", id);
     }
 
@@ -61,19 +57,44 @@ public class ClientService {
 
     public Client update(String id, Client updatedClient) {
         Optional<Client> clientData = clientRepository.findById(id);
+        boolean emailChanged = false;
+
+        Client clientSaved = null;
 
         if (clientData.isPresent()) {
-            Client dbClient = clientData.get();
-            String ignored[] = {"id", "createdAt", "activated"};
-            BeanUtils.copyProperties(updatedClient, dbClient, ignored);
-            return clientRepository.save(dbClient);
+            Client currentDbClient = clientData.get();
+
+            if(hasEmailUpdates(updatedClient, currentDbClient)){
+                JetUser jetUser = userService.getJetUserByUsername(currentDbClient.getEmail());
+                jetUser.setUsername(updatedClient.getEmail());
+                mergeClient(updatedClient, currentDbClient);
+                clientSaved = clientRepository.save(currentDbClient);
+                userService.save(jetUser);
+
+            } else{
+                mergeClient(updatedClient, currentDbClient);
+                clientSaved = clientRepository.save(currentDbClient);
+            }
+            return clientSaved;
+
         } else throw new EntityNotFoundException(Client.class, "id", id);
+    }
+
+    private boolean hasEmailUpdates(Client updatedClient, Client currentDbClient) {
+        return !currentDbClient.getEmail().equals(updatedClient.getEmail());
+    }
+
+    private void mergeClient(Client updatedClient, Client currentDbClient) {
+        String ignored[] = {"id", "createdAt", "activated"};
+        BeanUtils.copyProperties(updatedClient, currentDbClient, ignored);
     }
 
     public void deleteById(String id) {
         Client document = findById(id);
         log.info("Deleting client with id {}", id);
+        Client clientFound = clientRepository.findById(id).get();
         clientRepository.deleteById(document.getId());
+        userService.deleteByUsername(clientFound.getEmail());
     }
 
     public void inactivate(String id) {

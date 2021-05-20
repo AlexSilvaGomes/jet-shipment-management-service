@@ -31,7 +31,7 @@ public class ShipmentController {
     @ApiOperation(value = "Obter todos os envios paginando")
     public ResponseEntity<Page<Shipment>> getAllShipments(@RequestParam(required = false) String clientId, @RequestParam Integer pageNumber, @RequestParam(required = true) Integer pageSize) {
 
-        Page<Shipment> pageable = StringUtils.isEmpty(clientId) ?
+        Page<Shipment> pageable = StringUtils.isBlank(clientId) ?
                 shipmentService.findAll(pageNumber, pageSize) :
                 shipmentService.findAllByClient(new Client(clientId), pageNumber, pageSize);
 

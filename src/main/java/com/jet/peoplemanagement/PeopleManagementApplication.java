@@ -37,7 +37,7 @@ public class PeopleManagementApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		try {
-			userService.getByUsername(ADMIN_ADMIN_COM);
+			userService.getCredentialByUsername(ADMIN_ADMIN_COM);
 
 		} catch (UsernameNotFoundException e) {
 			Provider provider = new Provider(){
