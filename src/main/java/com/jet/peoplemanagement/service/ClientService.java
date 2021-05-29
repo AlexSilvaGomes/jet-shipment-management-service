@@ -57,8 +57,6 @@ public class ClientService {
 
     public Client update(String id, Client updatedClient) {
         Optional<Client> clientData = clientRepository.findById(id);
-        boolean emailChanged = false;
-
         Client clientSaved = null;
 
         if (clientData.isPresent()) {
@@ -92,7 +90,7 @@ public class ClientService {
     public void deleteById(String id) {
         Client document = findById(id);
         log.info("Deleting client with id {}", id);
-        Client clientFound = clientRepository.findById(id).get();
+        Client clientFound = findById(id);
         clientRepository.deleteById(document.getId());
         userService.deleteByUsername(clientFound.getEmail());
     }

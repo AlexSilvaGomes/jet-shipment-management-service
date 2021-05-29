@@ -59,17 +59,36 @@ public class ProviderService {
         Optional<Provider> providerData = providerRepository.findById(id);
 
         if (providerData.isPresent()) {
-            Provider dbProvider = providerData.get();
-            String ignored[] = {"id", "createdAt", "activated"};
-            BeanUtils.copyProperties(updatedProvider, dbProvider, ignored);
-            return providerRepository.save(dbProvider);
+
+            Provider currentDbProvider = providerData.get();
+            Provider providerSaved = null;
+
+            if (!currentDbProvider.getEmail().equals(updatedProvider.getEmail())) {
+                JetUser jetUser = userService.getJetUserByUsername(currentDbProvider.getEmail());
+                jetUser.setUsername(updatedProvider.getEmail());
+                mergeProvider(updatedProvider, currentDbProvider);
+                providerSaved = providerRepository.save(currentDbProvider);
+                userService.save(jetUser);
+            } else {
+                mergeProvider(updatedProvider, currentDbProvider);
+                providerSaved = providerRepository.save(currentDbProvider);
+            }
+            return providerSaved;
+
         } else throw new EntityNotFoundException(Provider.class, "id", id);
+    }
+
+    private void mergeProvider(Provider updatedProvider, Provider dbProvider) {
+        String ignored[] = {"id", "createdAt", "activated"};
+        BeanUtils.copyProperties(updatedProvider, dbProvider, ignored);
     }
 
     public void deleteById(String id) {
         Provider document = findById(id);
         log.info("Deleting provider with id {}", id);
+        Provider providerFound = findById(id);
         providerRepository.deleteById(document.getId());
+        userService.deleteByUsername(providerFound.getEmail());
     }
 
     public void inactivate(String id) {
@@ -86,14 +105,13 @@ public class ProviderService {
         providerRepository.save(document);
     }
 
-
     public void deleteAll() {
         providerRepository.deleteAll();
     }
 
     public UserProfile findByEmail(String email) {
         Optional<Provider> document = providerRepository.findByEmail(email);
-        if(document.isPresent()) return document.get();
+        if (document.isPresent()) return document.get();
         else throw new EntityNotFoundException(Provider.class, "email", email);
     }
 }
