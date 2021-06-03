@@ -67,6 +67,10 @@ public class FileToShipMapper {
 
     private static Shipment buildShipment(String[] index) {
 
+        if(!index[11].contains("Venda") || !index[11].contains("Envio")){
+            throw new IllegalArgumentException("Arquivo  enviado não está no padrão esperado");
+        }
+
         Shipment envio = new Shipment();
 
         envio.setProductName(index[0]);
@@ -74,11 +78,11 @@ public class FileToShipMapper {
         envio.setSku(index[5]);
 
         String[]  shipmentCodeMoreSaleCode = index[11].split("\\s+");
-        //envio.setSaleCode(shipmentCodeMoreSaleCode[1]);
-        envio.setSaleCode(UUID.randomUUID().toString());
+        envio.setSaleCode(shipmentCodeMoreSaleCode[1]);
+        //envio.setSaleCode(UUID.randomUUID().toString());
 
-        //envio.setShipmentCode(shipmentCodeMoreSaleCode[3]);
-        envio.setShipmentCode(UUID.randomUUID().toString());
+        envio.setShipmentCode(shipmentCodeMoreSaleCode[3]);
+        //envio.setShipmentCode(UUID.randomUUID().toString());
         envio.setShipType(index[12]);
         envio.setZone(index[13]);
         envio.setReceiverNeighbor(index[14]);

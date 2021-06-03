@@ -54,7 +54,7 @@ public class FileUploadController {
         return new ResponseEntity<List<FileUpload>>(items, HttpStatus.OK);
     }
 
-    @GetMapping("/")
+/*    @GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
 
         model.addAttribute("files", storageService.loadAll("clientNamePassar").stream().map(
@@ -63,9 +63,9 @@ public class FileUploadController {
                 .collect(Collectors.toList()));
 
         return "uploadForm";
-    }
+    }*/
 
-    @GetMapping("/files/{filename:.+}")
+   /* @GetMapping("/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
@@ -73,7 +73,7 @@ public class FileUploadController {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
-
+*/
     @ApiOperation(value = "Load file")
     @PostMapping("/loadFile")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -88,7 +88,7 @@ public class FileUploadController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Load file")
+    @ApiOperation(value = "Load files")
     @PostMapping("/loadFiles")
     public Single<ResponseEntity<String>> handleFilesUpload(@RequestParam("files") List<MultipartFile> files,
                                                             @RequestParam String clientId,

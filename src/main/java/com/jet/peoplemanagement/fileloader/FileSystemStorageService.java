@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
@@ -160,6 +161,11 @@ public class FileSystemStorageService implements StorageService {
             saveFileUploadShipmentCode(fileSaved, ship);
             deleteFileFromDisk(fileFromDisk);
 
+        } catch (IllegalArgumentException e) {
+            log.error("Formato do arquivo inválido: {} ", e.getMessage());
+            updateFileUploadStatus(fileSaved, ERROR, e.getMessage());
+            throw e;
+
         } catch (StorageException e) {
             log.error("Error saving file. See the message: {} ", e.getMessage());
             updateFileUploadStatus(fileSaved, ERROR, e.getMessage());
@@ -174,7 +180,7 @@ public class FileSystemStorageService implements StorageService {
         } catch (Exception e) {
             log.error("General error importing file. See the message: {} ", e.getMessage());
             copyFileToErrorDirectory(fileFromDisk, client.getName());
-            updateFileUploadStatus(fileSaved, ERROR, e.getMessage());
+            updateFileUploadStatus(fileSaved, ERROR, e instanceof DuplicateKeyException ? "Arquivo com o mesmo código de envio já recebido": e.getMessage());
             throw e;
         }
     }
