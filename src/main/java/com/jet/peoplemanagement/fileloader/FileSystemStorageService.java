@@ -128,8 +128,8 @@ public class FileSystemStorageService implements StorageService {
         try {
             fileSaved = storeOnDb(client, fileItem.toString());
             fileFromDisk = loadFromDisk(client, fileItem.toString()).toFile();
-            Shipment ship = createShipment(client, fileFromDisk);
-            saveFileUploadShipmentCode(fileSaved, ship);
+            List<Shipment> shipList = createShipments(client, fileFromDisk);
+            saveFileUploadShipmentCode(fileSaved, shipList);
             deleteFileFromDisk(fileFromDisk);
 
         } catch (StorageException e) {
@@ -157,8 +157,8 @@ public class FileSystemStorageService implements StorageService {
             storeOnDisk(file, client);
             fileSaved = storeOnDb(client, file.getOriginalFilename());
             fileFromDisk = loadFromDisk(client, file.getOriginalFilename()).toFile();
-            Shipment ship = createShipment(client, fileFromDisk);
-            saveFileUploadShipmentCode(fileSaved, ship);
+            List<Shipment> shipList = createShipments(client, fileFromDisk);
+            saveFileUploadShipmentCode(fileSaved, shipList);
             deleteFileFromDisk(fileFromDisk);
 
         } catch (IllegalArgumentException e) {
@@ -205,12 +205,16 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Transactional
-    private Shipment createShipment(Client client, File fileFromDisk) throws IOException {
-        Shipment ship = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
-        ship.setClient(client);
-        Shipment shipSaved = shipService.save(ship);
-        createShipmentStatus(shipSaved);
-        return ship;
+    private List<Shipment> createShipments(Client client, File fileFromDisk) throws IOException {
+        List<Shipment> shipList = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
+
+        for (Shipment ship : shipList) {
+            ship.setClient(client);
+            Shipment shipSaved = shipService.save(ship);
+            createShipmentStatus(shipSaved);
+        }
+
+        return shipList;
     }
 
     private void createShipmentStatus(Shipment shipSaved) {
@@ -241,8 +245,14 @@ public class FileSystemStorageService implements StorageService {
         return fileSaved;
     }
 
-    private void saveFileUploadShipmentCode(FileUpload fileSaved, Shipment ship) {
-        fileSaved.setShipmentCode(ship.getShipmentCode());
+    private void saveFileUploadShipmentCode(FileUpload fileSaved, List<Shipment> shipList) {
+
+        String shipmentCodes =  shipList.stream()
+                .map( shipment -> shipment.getShipmentCode() )
+                .collect( Collectors.joining( "," ) );
+
+        fileSaved.setShipmentCode(shipmentCodes);
+        fileSaved.setAmount(shipList.size());
         updateFileUploadStatus(fileSaved, "OK", "");
     }
 

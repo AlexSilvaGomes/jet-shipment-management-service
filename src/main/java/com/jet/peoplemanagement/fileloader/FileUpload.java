@@ -26,6 +26,9 @@ public class FileUpload extends BaseDocument {
     private String shipmentCode;
 
     @NotBlank
+    private int amount;
+
+    @NotBlank
     private String status;
 
     @NotBlank
