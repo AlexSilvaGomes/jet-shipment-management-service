@@ -6,6 +6,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -26,9 +27,17 @@ public class SimpleMongoConfig {
     public static final String FAST_JET_DB = "fast-jet-db";
     public static final String PROVIDER_DELIVERY_CPF = "providerDeliveryCpf";
 
+    @Value("${mongo.connection.string}")
+    private String mongoConnection;
+
+    @Value("${mongo.db.name}")
+    private String mongoDatabaseName;
+
     @Bean
     public MongoClient mongo() {
-        ConnectionString connectionString = new ConnectionString("mongodb://localhost:27017/fast-jet-db");
+        String fullConnectionString = mongoConnection + "/" + mongoDatabaseName + "?authSource=admin";
+        ConnectionString connectionString = new ConnectionString(fullConnectionString);
+
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();
@@ -38,11 +47,10 @@ public class SimpleMongoConfig {
 
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), FAST_JET_DB);
+        MongoTemplate mongoTemplate = new MongoTemplate(mongo(), mongoDatabaseName);
 
         ((MappingMongoConverter)mongoTemplate.getConverter())
                 .setTypeMapper(new DefaultMongoTypeMapper(null));//removes _class
-
 
         mongoTemplate.indexOps(PROVIDER).ensureIndex(new Index("cpf", Sort.Direction.ASC).unique());
         mongoTemplate.indexOps(PROVIDER).ensureIndex(new Index("email", Sort.Direction.ASC).unique());
