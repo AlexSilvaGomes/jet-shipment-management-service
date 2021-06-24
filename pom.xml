@@ -28,9 +28,9 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>prod</id>
+			<id>prd</id>
 			<properties>
-				<spring.profiles.active>prod</spring.profiles.active>
+				<spring.profiles.active>prd</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>
