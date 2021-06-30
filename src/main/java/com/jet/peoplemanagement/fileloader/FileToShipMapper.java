@@ -207,7 +207,7 @@ public class FileToShipMapper {
             String upperVal = s.toUpperCase().trim();
 
             if (upperVal
-                    .matches("(LESTE|OESTE|NORTE|SUL|EMBU DAS ARTES|GUARULHOS|OSASCO|SANTO ANDRÉ|SÃO BERNARDO)\\s[1-9]+") ||
+                    .matches("(LESTE|OESTE|NORTE|SUL|EMBU DAS ARTES|GUARULHOS|OSASCO|SANTO ANDRÉ|SÃO BERNARDO|EMBU)\\s[1-9]+") ||
                     regions.containsKey(upperVal)) {
 
                 String checkIgualsNeighbor = index[i - 1].trim().toUpperCase();
