@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.jet.peoplemanagement.invoice.InvoiceStatusEnum.GERADO;
+import static com.jet.peoplemanagement.invoice.InvoiceStatusEnum.VISUALIZACAO;
 import static java.util.Objects.isNull;
 
 @Service
@@ -136,11 +138,11 @@ public class InvoiceService {
 
         Optional<Invoice> lastInvoice = invoiceRepository.findTop1ByClient(client, Sort.by(Sort.Direction.DESC, "updatedAt"));
         List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
-        Invoice invoice = buildInvoice(client, lastInvoice, shipments);
+        Invoice invoice = buildInvoice(client, lastInvoice, shipments, VISUALIZACAO);
 
-        if(!lastInvoice.isPresent()){
+       /* if(!lastInvoice.isPresent()){
             save(invoice);
-        }
+        }*/
 
         return invoice;
     }
@@ -154,14 +156,15 @@ public class InvoiceService {
         }
 
         List<Shipment> shipments = shipService.findByClientAndOptionalLastInvoice(client, lastInvoice);
-        Invoice invoice = buildInvoice(client, lastInvoice, shipments);
+        Invoice invoice = buildInvoice(client, lastInvoice, shipments, GERADO);
         save(invoice);
 
         return invoice;
     }
 
-    private Invoice buildInvoice(Client client, Optional<Invoice> lastInvoice, List<Shipment> shipments) {
+    private Invoice buildInvoice(Client client, Optional<Invoice> lastInvoice, List<Shipment> shipments, InvoiceStatusEnum invoiceStatus) {
         Invoice invoice = new Invoice();
+        invoice.setStatus(invoiceStatus);
 
         List<InvoiceItems> items = shipments.stream()
                 .filter(shipment -> shipment.getStatus().equals(DeliveryStatusEnum.ENTREGUE))
@@ -175,7 +178,8 @@ public class InvoiceService {
         } else{
             if(!shipments.isEmpty()){
                 invoice.setPeriodInit(shipments.stream().min(Comparator.comparing(Shipment::getUpdatedAt)).get().getUpdatedAt().toLocalDate());
-                invoice.setPeriodEnd(shipments.stream().max(Comparator.comparing(Shipment::getUpdatedAt)).get().getUpdatedAt().toLocalDate());
+                //invoice.setPeriodEnd(shipments.stream().max(Comparator.comparing(Shipment::getUpdatedAt)).get().getUpdatedAt().toLocalDate());
+                invoice.setPeriodEnd(LocalDate.now());
             }
         }
 

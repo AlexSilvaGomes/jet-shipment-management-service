@@ -19,7 +19,7 @@ public class Client extends BaseDocument implements UserProfile {
     @NotBlank(message = "Company name is mandatory")
     private String companyName;
 
-    @NotBlank
+    //@NotBlank
     @Indexed(unique = true)
     private String cnpj;
 
