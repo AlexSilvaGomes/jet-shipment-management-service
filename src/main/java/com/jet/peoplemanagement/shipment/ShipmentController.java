@@ -2,17 +2,25 @@ package com.jet.peoplemanagement.shipment;
 
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
+import com.jet.peoplemanagement.util.ExcelGenerator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -65,6 +73,47 @@ public class ShipmentController {
     public ResponseEntity<List<Shipment>> getShipmentByProvider(@RequestParam("providerId") String providerId, @RequestParam("status") DeliveryStatusEnum status) {
         List<Shipment> shipmentData = shipmentService.findByProviderAndStatus(providerId, status);
         return new ResponseEntity<>(shipmentData, OK);
+    }
+
+    @GetMapping("/shipments/filterByParams")
+    @ApiOperation(value = "Obter envios por vários parâmetros")
+    public ResponseEntity<Page<Shipment>> getShipmentByParams(@RequestParam(required = false) Integer pageNumber,
+                                                              @RequestParam(required = false) Integer pageSize,
+                                                              @RequestParam(required = false) String clientId,
+                                                              @RequestParam(required = false) DeliveryStatusEnum status,
+                                                              @RequestParam("initDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime initDate,
+                                                              @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+                                                              String shipmentCode) {
+        ShipmentFilter filter = new ShipmentFilter(pageNumber, pageSize, clientId, status, initDate, endDate, shipmentCode);
+
+        Page<Shipment> shipmentData = shipmentService.findByClientStatusAndPeriodPageable(filter);
+        return new ResponseEntity<>(shipmentData, OK);
+    }
+
+    @GetMapping("/shipments/export")
+    @ApiOperation(value = "Obter envios por vários parametros e exportar para excel")
+    public void getShipmentByParamsAndExport(HttpServletResponse response,
+                                             @RequestParam(required = false) Integer pageNumber,
+                                             @RequestParam(required = false) Integer pageSize,
+                                             @RequestParam(required = false) String clientId,
+                                             @RequestParam(required = false) DeliveryStatusEnum status,
+                                             @RequestParam("initDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime initDate,
+                                             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+                                             String shipmentCode) throws IOException {
+
+
+        response.setContentType("application/octet-stream");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=users_" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        ShipmentFilter filter = new ShipmentFilter(pageNumber, pageSize, clientId, status, initDate, endDate, shipmentCode);
+        List<Shipment> shipmentData = shipmentService.findByClientStatusAndPeriod(filter);
+
+        ExcelGenerator gen = new ExcelGenerator("fileName", "período", shipmentData, new String[]{});
+        gen.export(response);
     }
 
 //    @GetMapping("/shipments/filter")
