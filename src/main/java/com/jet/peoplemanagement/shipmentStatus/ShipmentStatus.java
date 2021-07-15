@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-@Document(collection = "deliveries")
+@Document(collection = "shipmentsStatus")
 public class ShipmentStatus extends BaseDocument {
 
     @NotBlank

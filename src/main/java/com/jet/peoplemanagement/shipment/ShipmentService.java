@@ -10,15 +10,13 @@ import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -95,6 +93,14 @@ public class ShipmentService {
         if (shipmentData.isPresent()) {
             return shipmentData.get();
         } else throw new EntityNotFoundException(Shipment.class, "shipmentCode", shipmentCode);
+    }
+
+    public Page<Shipment> findByClientStatusAndPeriodPageable(ShipmentFilter filter) {
+        return shipmentRepository.getShipmentsByParamsPageable(filter);
+    }
+
+    public List<Shipment> findByClientStatusAndPeriod(ShipmentFilter filter) {
+        return shipmentRepository.getShipmentsByParams(filter);
     }
 
     public List<Shipment> findByProviderAndStatus(String providerId, DeliveryStatusEnum status) {
