@@ -57,4 +57,8 @@ public class Shipment extends BaseDocument {
     private DeliveryStatusEnum status = DeliveryStatusEnum.POSTADO;
 
     private List<ShipmentStatus> shipmentsStatus;
+
+    private Double price;
+
+
 }

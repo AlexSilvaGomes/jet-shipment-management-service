@@ -210,6 +210,7 @@ public class FileSystemStorageService implements StorageService {
 
         for (Shipment ship : shipList) {
             ship.setClient(client);
+
             Shipment shipSaved = shipService.save(ship);
             createShipmentStatus(shipSaved);
         }

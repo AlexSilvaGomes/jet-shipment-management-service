@@ -2,6 +2,7 @@ package com.jet.peoplemanagement.shipment;
 
 import com.jet.peoplemanagement.invoice.Invoice;
 import com.jet.peoplemanagement.model.Client;
+import com.jet.peoplemanagement.params.RegionService;
 import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
 import com.jet.peoplemanagement.shipmentStatus.ShipmentStatusService;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
@@ -10,14 +11,13 @@ import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Objects.isNull;
 
@@ -30,6 +30,9 @@ public class ShipmentService {
 
     @Autowired
     ShipmentStatusService deliveryService;
+
+    @Autowired
+    RegionService regionService;
 
     public Page<Shipment> findAll(Integer pageNumber, Integer pageSize) {
         Page<Shipment> pageable = shipmentRepository.findAll(
@@ -63,6 +66,14 @@ public class ShipmentService {
 
     public Shipment save(Shipment shipment) {
         shipment.setCreatedAt(LocalDateTime.now());
+
+        Map<String, Double> regionsMap = regionService.getRegionsPrice(shipment.getClient().getId());
+
+        String zone = shipment.getZone() != null? shipment.getZone().toUpperCase() : "";
+        Double price = regionsMap.get(shipment.getClient().getId() + "#" + zone);
+
+        shipment.setPrice( Objects.isNull(price) ? 12.00 : price);
+
         return shipmentRepository.save(shipment);
     }
 

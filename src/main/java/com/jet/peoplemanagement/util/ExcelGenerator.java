@@ -81,7 +81,7 @@ public class ExcelGenerator {
             createCell(row, columnCount++, ship.getSaleCode(), style);
             createCell(row, columnCount++, ship.getProductName(), style);
             createCell(row, columnCount++, ship.getZone(), style);
-            createCell(row, columnCount++, 12.00, style);
+            createCell(row, columnCount++, ship.getPrice(), style);
 
             createCell(row, columnCount++, ship.getStatus().getDesc(), style);
             createCell(row, columnCount++, ship.getReceiverNeighbor(), style);
