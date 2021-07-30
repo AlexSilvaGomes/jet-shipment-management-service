@@ -99,8 +99,7 @@ public class RegionService {
         }
     }
 
-    //@Cacheable("mapRegions")
-    @Cacheable("params")
+    @Cacheable(value = "mapRegions", key = "#clientId")
     public Map<String, Double> getRegionsPrice(String clientId) {
         Map<String, Double> regionsMap = new HashMap<>();
 

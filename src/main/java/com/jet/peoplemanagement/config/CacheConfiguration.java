@@ -17,9 +17,9 @@ public class CacheConfiguration {
     @Bean
     public CacheManager cacheManager(Ticker ticker) {
         CaffeineCache messageCache = buildCache("params", ticker, 5);
-        //CaffeineCache notificationCache = buildCache("notifications", ticker, 60);
+        CaffeineCache notificationCache = buildCache("mapRegions", ticker, 5);
         SimpleCacheManager manager = new SimpleCacheManager();
-        manager.setCaches(Arrays.asList(messageCache));
+        manager.setCaches(Arrays.asList(messageCache, notificationCache));
         return manager;
     }
 

@@ -4,12 +4,9 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
@@ -23,7 +20,7 @@ public class SimpleMongoConfig {
     public static final String CLIENTS = "clients";
     public static final String PROVIDER = "providers";
     public static final String UPLOADED_FILES = "uploadedFiles";
-    public static final String DELIVERIES = "deliveries";
+    public static final String SHIPMENTS_STATUS = "shipmentsStatus";
     public static final String PROVIDER_DELIVERY_CPF = "providerDeliveryCpf";
 
     @Value("${mongo.connection.string}")
@@ -65,8 +62,8 @@ public class SimpleMongoConfig {
         mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("uploadedFilesShipmentIndex"));
         mongoTemplate.indexOps(UPLOADED_FILES).ensureIndex(new Index("client", Sort.Direction.ASC));
 
-        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("deliveryShipmentIndex"));
-        mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index(PROVIDER_DELIVERY_CPF, Sort.Direction.ASC));
+        mongoTemplate.indexOps(SHIPMENTS_STATUS).ensureIndex(new Index("shipmentCode", Sort.Direction.ASC).named("deliveryShipmentIndex"));
+        mongoTemplate.indexOps(SHIPMENTS_STATUS).ensureIndex(new Index(PROVIDER_DELIVERY_CPF, Sort.Direction.ASC));
         //mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("providerConferenceCpf", Sort.Direction.ASC));
         //mongoTemplate.indexOps(DELIVERIES).ensureIndex(new Index("shipment", Sort.Direction.ASC));
 
