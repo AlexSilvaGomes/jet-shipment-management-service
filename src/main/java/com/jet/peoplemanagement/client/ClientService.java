@@ -1,11 +1,11 @@
-package com.jet.peoplemanagement.service;
+package com.jet.peoplemanagement.client;
 
 import com.jet.peoplemanagement.model.UserProfile;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.repository.ClientRepository;
+import com.jet.peoplemanagement.client.ClientRepository;
 import com.jet.peoplemanagement.user.JetUser;
 import com.jet.peoplemanagement.user.UserType;
 import io.jsonwebtoken.lang.Collections;

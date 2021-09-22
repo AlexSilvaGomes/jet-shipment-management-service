@@ -11,6 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,7 +23,8 @@ import java.time.LocalDateTime;
 @CrossOrigin
 @EnableCaching
 @ComponentScan("com.jet")
-public class PeopleManagementApplication implements CommandLineRunner {
+@EnableFeignClients
+public class App implements CommandLineRunner {
 
 	public static final String ADMIN_ADMIN_COM = "admin@admin.com";
 
@@ -33,7 +35,7 @@ public class PeopleManagementApplication implements CommandLineRunner {
 	ProviderService providerService;
 
 	public static void main(String[] args) {
-		SpringApplication.run(PeopleManagementApplication.class, args);
+		SpringApplication.run(App.class, args);
 	}
 
 	@Override

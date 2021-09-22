@@ -1,0 +1,18 @@
+logging:
+  level:
+    root: DEBUG
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          meli:
+            client-id: 3729582442177052
+            client-secret: 9MwBBwyh3hrIxGOB8Qr9e4Dldwypa3aL
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/meli
+        provider:
+          meli:
+            token-uri: https://api.mercadolibre.com/oauth/token
+            authorization-uri: https://auth.mercadolivre.com.br/authorization

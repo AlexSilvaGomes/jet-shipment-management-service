@@ -1,18 +1,14 @@
 package com.jet.peoplemanagement.auth;
 
-import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.model.Provider;
 import com.jet.peoplemanagement.model.UserProfile;
-import com.jet.peoplemanagement.service.ClientService;
+import com.jet.peoplemanagement.client.ClientService;
 import com.jet.peoplemanagement.service.ProviderService;
 import com.jet.peoplemanagement.user.UserServiceJWT;
 import com.jet.peoplemanagement.user.UserType;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,9 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.jet.peoplemanagement.exception.ExceptionType.HTTP_INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @CrossOrigin

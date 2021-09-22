@@ -1,8 +1,6 @@
 package com.jet.peoplemanagement.fileloader;
 
-import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
 import com.jet.peoplemanagement.shipmentStatus.ShipmentStatusService;
-import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
@@ -26,26 +24,23 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
-
 @Service
 @Slf4j
 public class FileSystemStorageService implements StorageService {
 
     public static final String ERROR = "ERROR";
     public static final String ERROR_DIR = "error";
-    public static final String SYSTEM_ADMIN = "Administrador do sistema";
     private final Path rootLocation;
     private final ShipmentService shipService;
-    private final ShipmentStatusService deliveryService;
+    private final ShipmentStatusService shipmentStatusService;
     private final FileUploadService uploadService;
     private Path clientLocation;
 
     @Autowired
-    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, ShipmentStatusService deliveryService, FileUploadService uploadService) {
+    public FileSystemStorageService(StorageProperties properties, ShipmentService shipService, ShipmentStatusService shipmentStatusService, FileUploadService uploadService) {
         this.rootLocation = Paths.get(properties.getLocation());
         this.shipService = shipService;
-        this.deliveryService = deliveryService;
+        this.shipmentStatusService = shipmentStatusService;
         this.uploadService = uploadService;
         init();
     }
@@ -208,29 +203,17 @@ public class FileSystemStorageService implements StorageService {
     private List<Shipment> createShipments(Client client, File fileFromDisk) throws IOException {
         List<Shipment> shipList = FileToShipMapper.giveMeShipmentModel(fileFromDisk);
 
-        for (Shipment ship : shipList) {
+        return shipService.saveAll(client, shipList);
+
+        /*for (Shipment ship : shipList) {
             ship.setClient(client);
-
             Shipment shipSaved = shipService.save(ship);
-            createShipmentStatus(shipSaved);
+            shipmentStatusService.createShipmentStatus(shipSaved);
         }
 
-        return shipList;
+        return shipList;*/
     }
 
-    private void createShipmentStatus(Shipment shipSaved) {
-        ShipmentStatus delivery = new ShipmentStatus();
-        delivery.setShipmentCode(shipSaved.getShipmentCode());
-        delivery.setStatus( DeliveryStatusEnum.POSTADO);
-        String name = nonNull(shipSaved.getClient()) ? shipSaved.getClient().getName() : SYSTEM_ADMIN;
-        delivery.setStatusResponsibleName(name);
-        try {
-            deliveryService.justSave(delivery);
-        } catch (Exception e) {
-            shipService.deleteById(shipSaved.getId());
-            throw e;
-        }
-    }
 
     private void updateFileUploadStatus(FileUpload fileSaved, String status, String message) {
         fileSaved.setStatus(status);

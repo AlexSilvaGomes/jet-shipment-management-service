@@ -1,8 +1,7 @@
-package com.jet.peoplemanagement.repository;
+package com.jet.peoplemanagement.client;
 
 
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.shipment.Shipment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;

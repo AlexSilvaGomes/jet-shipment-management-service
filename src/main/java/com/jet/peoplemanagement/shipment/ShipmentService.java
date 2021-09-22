@@ -64,6 +64,15 @@ public class ShipmentService {
         } else throw new EntityNotFoundException(Shipment.class, "id", id);
     }
 
+    public List<Shipment> saveAll(Client client, List<Shipment> shipmentList){
+        for(Shipment ship: shipmentList){
+            ship.setClient(client);
+            save(ship);
+            deliveryService.createShipmentStatus(ship);
+        }
+        return shipmentList;
+    }
+
     public Shipment save(Shipment shipment) {
         shipment.setCreatedAt(LocalDateTime.now());
 
@@ -146,6 +155,7 @@ public class ShipmentService {
         Shipment currentShip = findByShipmentCode(status.getShipmentCode());
         currentShip.setStatus(status.getStatus());//Atualizando com o último status
         currentShip.setCurrentProviderId(status.getStatusResponsibleId());
+        currentShip.setCurrentProviderName(status.getStatusResponsibleName());
         save(currentShip);
     }
 

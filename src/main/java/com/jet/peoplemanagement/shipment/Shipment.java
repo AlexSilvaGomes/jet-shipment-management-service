@@ -26,7 +26,9 @@ public class Shipment extends BaseDocument {
 
     @Indexed
     private String currentProviderId;
+    private String currentProviderName;
 
+    private List<Product> products;
     private String productName;
     private String productDesc;
     private String sku;

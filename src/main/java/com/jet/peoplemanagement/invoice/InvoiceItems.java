@@ -23,4 +23,6 @@ public class InvoiceItems extends BaseDocument {
     private String shipmentCode;
 
     private String sku;
+
+    private Double price;
 }

@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.repository;
+package com.jet.peoplemanagement.client;
 
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.model.UserProfile;

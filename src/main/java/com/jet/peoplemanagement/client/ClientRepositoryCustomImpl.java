@@ -1,4 +1,4 @@
-package com.jet.peoplemanagement.repository;
+package com.jet.peoplemanagement.client;
 
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.model.GroupedAggregation;
@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import javax.swing.text.Document;
 import java.util.Optional;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;

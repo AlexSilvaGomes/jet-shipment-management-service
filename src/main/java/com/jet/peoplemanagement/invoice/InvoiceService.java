@@ -3,7 +3,7 @@ package com.jet.peoplemanagement.invoice;
 import com.jet.peoplemanagement.exception.BusinessException;
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.service.ClientService;
+import com.jet.peoplemanagement.client.ClientService;
 import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
@@ -169,7 +169,7 @@ public class InvoiceService {
         List<InvoiceItems> items = shipments.stream()
                 .filter(shipment -> shipment.getStatus().equals(DeliveryStatusEnum.ENTREGUE))
                 .map(ship ->  {
-                    return new InvoiceItems(invoice.getId(), ship.getShipmentCode(), ship.getSku());
+                    return new InvoiceItems(invoice.getId(), ship.getShipmentCode(), ship.getSku(), ship.getPrice());
                 }).collect(Collectors.toList());
 
         if(lastInvoice.isPresent()) {
@@ -184,7 +184,7 @@ public class InvoiceService {
         }
 
         invoice.setTotalItems(items.size());
-        Double amount = invoice.getTotalItems() * 13.00;
+        Double amount = items.stream().filter(item -> item.getPrice() != null).mapToDouble(InvoiceItems::getPrice).sum();
         invoice.setAmount(BigDecimal.valueOf(amount));
         invoice.setItems(items);
         invoice.setClient(clientService.findById(client.getId()));

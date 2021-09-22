@@ -1,6 +1,7 @@
 package com.jet.peoplemanagement.shipmentStatus;
 
 import com.jet.peoplemanagement.exception.EntityNotFoundException;
+import com.jet.peoplemanagement.shipment.Shipment;
 import com.jet.peoplemanagement.shipment.ShipmentService;
 import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Service
 @Slf4j
@@ -25,6 +27,8 @@ public class ShipmentStatusService {
 
     @Autowired
     ShipmentService shipmentService;
+
+    public static final String SYSTEM_ADMIN = "Administrador do sistema";
 
     public Page<ShipmentStatus> findAll(Integer pageNumber, Integer pageSize) {
         Page<ShipmentStatus> pageable = deliveryRepository.findAll(PageRequest.of(isNull(pageNumber) ? 0 : pageNumber, isNull(pageSize) ? 10 : pageSize));
@@ -57,6 +61,20 @@ public class ShipmentStatusService {
     public ShipmentStatus justSave(ShipmentStatus delivery) {
         delivery.setCreatedAt(LocalDateTime.now());
         return deliveryRepository.save(delivery);
+    }
+
+    public void createShipmentStatus(Shipment shipSaved) {
+        ShipmentStatus delivery = new ShipmentStatus();
+        delivery.setShipmentCode(shipSaved.getShipmentCode());
+        delivery.setStatus( DeliveryStatusEnum.POSTADO);
+        String name = nonNull(shipSaved.getClient()) ? shipSaved.getClient().getName() : SYSTEM_ADMIN;
+        delivery.setStatusResponsibleName(name);
+        try {
+            justSave(delivery);
+        } catch (Exception e) {
+            shipmentService.deleteById(shipSaved.getId());
+            throw e;
+        }
     }
 
     public ShipmentStatus update(String id, ShipmentStatus updatedDelivery) {

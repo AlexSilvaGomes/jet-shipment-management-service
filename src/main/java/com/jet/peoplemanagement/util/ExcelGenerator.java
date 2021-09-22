@@ -11,9 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 public class ExcelGenerator {
 
@@ -23,8 +25,8 @@ public class ExcelGenerator {
     private XSSFSheet sheet;
     private List<Shipment> listShipments;
 
-    public ExcelGenerator(String fileName, String sheetName, List<Shipment> listUsers, String... headers) {
-        this.listShipments = listUsers;
+    public ExcelGenerator(String fileName, String sheetName, List<Shipment> shipmentList, String... headers) {
+        this.listShipments = shipmentList;
         this.headers = headers;
         this.sheetName = sheetName;
         workbook = new XSSFWorkbook();
@@ -41,15 +43,17 @@ public class ExcelGenerator {
         style.setFont(font);
 
         this.headers = new String[]{"Parceiro", "Data", "Envio",
-                "Venda", "Produto", "Região", "Preço", "Status", "Bairro", "Destinatário", "Motoca"};
+                "Venda", "Região", "Preço", "Motoboy", "Status", "Bairro", "Destinatário", "Produto"};
 
         for (int i = 0; i < headers.length; i++) {
-            createCell(row, i, headers[i], style);
+            createCell(row, i, headers[i], style,true);
         }
     }
 
-    private void createCell(Row row, int columnCount, Object value, CellStyle style) {
-        sheet.autoSizeColumn(columnCount);
+    private void createCell(Row row, int columnCount, Object value, CellStyle style, boolean autoSize) {
+        if(autoSize){
+            sheet.autoSizeColumn(columnCount);
+        }
         Cell cell = row.createCell(columnCount);
         if (value instanceof Integer) {
             cell.setCellValue((Integer) value);
@@ -75,20 +79,28 @@ public class ExcelGenerator {
             Row row = sheet.createRow(rowCount++);
             int columnCount = 0;
 
-            createCell(row, columnCount++, ship.getClient().getName(), style);
-            createCell(row, columnCount++, ship.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")), style);
-            createCell(row, columnCount++, ship.getShipmentCode(), style);
-            createCell(row, columnCount++, ship.getSaleCode(), style);
-            createCell(row, columnCount++, ship.getProductName(), style);
-            createCell(row, columnCount++, ship.getZone(), style);
-            createCell(row, columnCount++, ship.getPrice(), style);
+            createCell(row, columnCount++, ship.getClient().getName(), style, true);
+            createCell(row, columnCount++, ship.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")), style, true);
+            createCell(row, columnCount++, ship.getShipmentCode(), style, true);
+            createCell(row, columnCount++, ship.getSaleCode(), style, true);
+            createCell(row, columnCount++, ship.getZone(), style, true);
+            columnCount = setCellPrice(style, ship, row, columnCount);
 
-            createCell(row, columnCount++, ship.getStatus().getDesc(), style);
-            createCell(row, columnCount++, ship.getReceiverNeighbor(), style);
-            createCell(row, columnCount++, ship.getReceiverName(), style);
-
-            createCell(row, columnCount++, ship.getCurrentProviderId(), style);
+            createCell(row, columnCount++, ship.getCurrentProviderName(), style, true);
+            createCell(row, columnCount++, ship.getStatus().getDesc(), style, true);
+            createCell(row, columnCount++, ship.getReceiverNeighbor(), style, true);
+            createCell(row, columnCount++, ship.getReceiverName(), style, true);
+            createCell(row, columnCount++, ship.getProductName(), style, false);
         }
+    }
+
+    private int setCellPrice(CellStyle style, Shipment ship, Row row, int columnCount) {
+        NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+        double shipPrice = ship.getPrice() != null ? ship.getPrice(): 0.0;
+        //String.format("%.2f", shipPrice)
+
+        createCell(row, columnCount++, shipPrice , style, true);
+        return columnCount;
     }
 
     public void export(HttpServletResponse response) throws IOException {

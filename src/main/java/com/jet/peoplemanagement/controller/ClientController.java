@@ -1,7 +1,7 @@
 package com.jet.peoplemanagement.controller;
 
 import com.jet.peoplemanagement.model.Client;
-import com.jet.peoplemanagement.service.ClientService;
+import com.jet.peoplemanagement.client.ClientService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/api")
 @Api(value = "Controle para gerenciamento de clientes")
+@Slf4j
 public class ClientController {
 
     @Autowired
