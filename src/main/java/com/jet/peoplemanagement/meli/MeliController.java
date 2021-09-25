@@ -20,6 +20,7 @@ import java.net.URI;
 import java.rmi.ServerException;
 import java.util.*;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
 @CrossOrigin
@@ -87,7 +88,7 @@ public class MeliController {
         try {
             root = meliService.getShipmentById(clientId, shipmentId);
         } catch (Exception e) {
-            return buildMeliAuthRedirection();
+            return buildMeliAuthRedirection(clientId);
         }
 
         return new ResponseEntity<>(root, OK);
@@ -101,7 +102,7 @@ public class MeliController {
         try {
             orders = meliService.getOrdersBySeller(clientId, seller);
         } catch (Exception e) {
-            return buildMeliAuthRedirection();
+            return buildMeliAuthRedirection(clientId);
         }
 
         List<Shipment> shipments = new ArrayList<>();
@@ -129,10 +130,10 @@ public class MeliController {
         return new ResponseEntity<>(shipments, OK);
     }
 
-    private ResponseEntity buildMeliAuthRedirection() {
+    private ResponseEntity buildMeliAuthRedirection(String clientId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:8080/login/meli/testRedirect"));
-        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+        headers.setLocation(URI.create("http://localhost:8080/login/meli/testRedirect?clientId="+clientId));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
 
@@ -170,13 +171,15 @@ public class MeliController {
 
     @GetMapping(value = "/meli/testRedirect")
     @ResponseBody
-    public ResponseEntity<Object> testTestTemplate(HttpServletResponse httpResp) throws IOException {
-
-
+    public ResponseEntity<Object> testTestTemplate(@RequestParam(required = true, value = "clientId") String clientId) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
+        String stateUUID = UUID.randomUUID().toString();
+        randomToClient.put(stateUUID, clientId);
+
         String fooResourceUrl = "https://auth.mercadolivre.com.br/authorization?response_type=code" +
                 "&client_id=3729582442177052" +
-                "&redirect_uri=http://localhost:8080/login/oauth2/code/meli";
+                "&redirect_uri=http://localhost:8080/login/oauth2/code/meli" +
+                "&state="+stateUUID;
         //httpResp.addHeader("Location", fooResourceUrl);
         //httpResp.addHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         //httpResp.addHeader("Access-Control-Allow-Headers", "x-requested-with, authorization");
@@ -197,17 +200,24 @@ public class MeliController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(fooResourceUrl));
         headers.set("type", "redirection");
-        return new ResponseEntity<>(headers, HttpStatus.OK);
+        return new ResponseEntity<>(headers, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
 
     }
 
     @GetMapping("/oauth2/code/meli")
     public RedirectView auth(@RequestParam(required = true) String code, @RequestParam(required = false) String state) {
-        MeliOAuthClient result = meliService.getToken(code, state, false);
 
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("http://localhost:4200/#/partners/upload");
 
+        if(randomToClient.containsKey(state)){
+            String clientId = randomToClient.remove(state);
+            MeliOAuthClient result = meliService.getToken(code, clientId, false);
+            redirectView.setUrl("http://localhost:4200/#/partners/upload");
+            //redirectView.setStatusCode(OK);
+        } else{
+            redirectView.setUrl("http://localhost:4200/#/partners/upload");
+            //redirectView.setStatusCode(BAD_REQUEST);
+        }
         return redirectView;
     }
 

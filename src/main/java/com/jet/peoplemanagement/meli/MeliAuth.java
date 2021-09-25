@@ -14,6 +14,7 @@ public class MeliAuth {
     }
 
     public void putToken(String clientId, MeliOAuthClient meliToken){
+        meliToken.calculateExpiration();
         meliMap.put(clientId, meliToken);
     }
 

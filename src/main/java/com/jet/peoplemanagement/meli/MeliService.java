@@ -120,13 +120,13 @@ public class MeliService {
         }
     }
 
-    public MeliOAuthClient getToken(String code, String state, boolean isRefreshToken) {
+    public MeliOAuthClient getToken(String code, String clientId, boolean isRefreshToken) {
 
-        if (!stateToClientId.containsKey(state)) {
-            log.error("clientId/state not found in oAuthResponse from meli");
-        }
+//        if (!stateToClientId.containsKey(state)) {
+//            log.error("clientId/state not found in oAuthResponse from meli");
+//        }
         try {
-            String clientId = stateToClientId.containsKey(state) ? stateToClientId.get(state) : "clientNotFount";
+            //String clientId = stateToClientId.containsKey(state) ? stateToClientId.get(state) : "clientNotFount";
             String url = baseUrl + "/oauth/token";
             HttpHeaders headers = getHttpHeaders(null);
             //body
