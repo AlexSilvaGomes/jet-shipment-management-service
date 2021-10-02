@@ -98,7 +98,7 @@ public class JwtAuthenticationController {
                                          UserProfile profile) {
         UserResponse response = new UserResponse(token,
                 credentialUser.getType(), userDetails.getUsername(),
-                profile.getName(), profile.getId(), profile.getCpf());
+                profile.getName(), profile.getId(), profile.getCpf(), profile.getSellerId());
 
         return response;
     }

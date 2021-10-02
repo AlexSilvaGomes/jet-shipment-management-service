@@ -39,4 +39,5 @@ public class Client extends BaseDocument implements UserProfile {
     private String img;
     private String cep;
     private boolean activated;
+    private int sellerId;
 }

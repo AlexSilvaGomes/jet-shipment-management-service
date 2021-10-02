@@ -1,9 +1,15 @@
 package com.jet.peoplemanagement.meli;
 
+import com.jet.peoplemanagement.client.ClientService;
+import com.jet.peoplemanagement.exception.GenericErrorException;
+import com.jet.peoplemanagement.meli.model.SelectedShipments;
 import com.jet.peoplemanagement.meli.order.OrderRoot;
 import com.jet.peoplemanagement.meli.shipment.ShipmentRoot;
+import com.jet.peoplemanagement.meli.user.MeliUser;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipment.Shipment;
+import com.jet.peoplemanagement.shipment.ShipmentFilter;
+import com.jet.peoplemanagement.shipment.ShipmentService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.rmi.ServerException;
 import java.util.*;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum.POSTADO;
+import static java.time.LocalDateTime.now;
 import static org.springframework.http.HttpStatus.OK;
 
 @CrossOrigin
@@ -33,10 +39,13 @@ public class MeliController {
     @Autowired
     MeliService meliService;
 
-    Map<String, String> randomToClient = new HashMap<>();
+    @Autowired
+    ClientService clientService;
 
-    /*@Autowired
-    WebClient webClient;*/
+    @Autowired
+    ShipmentService shipmentService;
+
+    Map<String, String> randomToClient = new HashMap<>();
 
     private final String BASE_URL = "https://api.mercadolibre.com/shipments/40320867783";
 
@@ -87,11 +96,12 @@ public class MeliController {
         ShipmentRoot root = null;
         try {
             root = meliService.getShipmentById(clientId, shipmentId);
+            return new ResponseEntity<>(root, OK);
+
         } catch (Exception e) {
             return buildMeliAuthRedirection(clientId);
         }
 
-        return new ResponseEntity<>(root, OK);
     }
 
     @GetMapping(value = "/meli/orders/{seller}")
@@ -101,34 +111,89 @@ public class MeliController {
         OrderRoot orders = null;
         try {
             orders = meliService.getOrdersBySeller(clientId, seller);
-        } catch (Exception e) {
+            ShipmentFilter filter = new ShipmentFilter(null, null, clientId, POSTADO, now(), now(), null);
+            List<Shipment> jetShipmentsToday = shipmentService.findByOptionalParams(filter);
+
+            List<Shipment> meliShipmentsToday = new ArrayList<>();
+            orders.orders.forEach(order -> {
+                order.orderItems.forEach(meliShip -> {
+                    Shipment jetShip = new Shipment();
+                    //jetShip.setClient(new Client(clientId));
+
+                    Optional<Shipment> shipFound = jetShipmentsToday.stream().filter(shipAlreadySent ->  shipAlreadySent.equals(order.getShipping().getId())).findFirst();
+
+                    jetShip.setAlreadySent(shipFound.isPresent());
+
+                    jetShip.setShipmentCode(order.getShipping().getId());
+                    jetShip.setSaleCode(order.getId());
+                    jetShip.setReceiverNickName(order.getBuyer().getNickname());
+                    //jetShip.setReceiverName(getSafeValue(destMap, i));
+                    //jetShip.setReceiverCep(getSafeValue(cepMap, i));
+                    //jetShip.setReceiverAddress(getSafeValue(endMap, i));
+                    //jetShip.setReceiverAddressComp(getSafeValue(compMap, i));
+                    //jetShip.setReceiverCity(getSafeValue(cityMap, 1));
+                    //jetShip.setReceiverNeighbor(getSafeValue(neighborMap, i));
+                    //jetShip.setZone(getSafeValue(zoneMap, i));
+                    jetShip.setProducts(order.toProducts());
+
+                    meliShipmentsToday.add(jetShip);
+                });
+            });
+
+            return new ResponseEntity<>(meliShipmentsToday, OK);
+
+        } catch (ClientNotAuthenticateException clientNotAuthenticateException) {
             return buildMeliAuthRedirection(clientId);
+        } catch(Exception ex){
+            String message = "Algo de errado no fluxo de verificação de pacotes enviados/a enviar para a jetflex.";
+            log.error(message + " No cliente: {}", clientId);
+            throw new GenericErrorException(message);
         }
 
-        List<Shipment> shipments = new ArrayList<>();
-        orders.orders.forEach(order -> {
-            order.orderItems.forEach(meliShip -> {
+    }
+
+    @GetMapping(value = "/meli/selectedShipments")
+    @ResponseBody
+    public ResponseEntity<HttpStatus> saveSelectedShipments(@RequestBody SelectedShipments selectedShipments) {
+
+        ShipmentRoot root = null;
+        Client client = new Client(selectedShipments.getClientId());
+        List<Shipment> newShipmentList = new ArrayList<>();
+        selectedShipments.getShipments().stream().forEach(ship -> {
+
+            try {
+                ShipmentRoot meliShipDetails =  meliService.getShipmentById(client.getId(), ship.getShipmentCode());
+
                 Shipment jetShip = new Shipment();
-                jetShip.setClient(new Client(clientId));
+                jetShip.setClient(client);
 
-                jetShip.setShipmentCode(order.getShipping().getId());
-                jetShip.setSaleCode(order.getId());
-                jetShip.setReceiverNickName(order.getBuyer().getNickname());
-                //jetShip.setReceiverName(getSafeValue(destMap, i));
-                //jetShip.setReceiverCep(getSafeValue(cepMap, i));
-                //jetShip.setReceiverAddress(getSafeValue(endMap, i));
-                //jetShip.setReceiverAddressComp(getSafeValue(compMap, i));
-                //jetShip.setReceiverCity(getSafeValue(cityMap, 1));
-                //jetShip.setReceiverNeighbor(getSafeValue(neighborMap, i));
+                jetShip.setShipmentCode(ship.getShipmentCode());
+                jetShip.setSaleCode(ship.getSaleCode());
+                jetShip.setReceiverNickName(ship.getReceiverNickName());
+                jetShip.setReceiverName(meliShipDetails.getReceiverAddress().receiverName);
+                jetShip.setReceiverCep(meliShipDetails.getReceiverAddress().zipCode);
+                jetShip.setReceiverAddress(meliShipDetails.getReceiverAddress().streetName + ", "+ meliShipDetails.getReceiverAddress().streetNumber);
+                jetShip.setReceiverAddressComp(meliShipDetails.getReceiverAddress().addressLine);
+                jetShip.setReceiverCity(meliShipDetails.getReceiverAddress().city.name);
+                jetShip.setReceiverNeighbor(meliShipDetails.getReceiverAddress().neighborhood.name);
                 //jetShip.setZone(getSafeValue(zoneMap, i));
-                jetShip.setProducts(order.toProducts());
+                jetShip.setProducts(ship.getProducts());
 
-                shipments.add(jetShip);
-            });
+                newShipmentList.add(jetShip);
+
+            } catch (ClientNotAuthenticateException e) {
+                buildMeliAuthRedirection(client.getId());
+            }
         });
 
-        return new ResponseEntity<>(shipments, OK);
+        ShipmentFilter filter = new ShipmentFilter(null, null, client.getId(), POSTADO, now(), now(), null);
+        List<Shipment> jetShipmentsToday = shipmentService.findByOptionalParams(filter);
+        shipmentService.deleteByList(jetShipmentsToday);
+        shipmentService.saveAll(client, newShipmentList);
+
+        return new ResponseEntity<>(OK);
     }
+
 
     private ResponseEntity buildMeliAuthRedirection(String clientId) {
         HttpHeaders headers = new HttpHeaders();
@@ -200,7 +265,9 @@ public class MeliController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(fooResourceUrl));
         headers.set("type", "redirection");
-        return new ResponseEntity<>(headers, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+        Map<String, String> body = new HashMap<>();
+        body.put("redirectUrl", URI.create(fooResourceUrl).toString());
+        return new ResponseEntity<>(body, headers, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
 
     }
 
@@ -211,12 +278,22 @@ public class MeliController {
 
         if(randomToClient.containsKey(state)){
             String clientId = randomToClient.remove(state);
-            MeliOAuthClient result = meliService.getToken(code, clientId, false);
-            redirectView.setUrl("http://localhost:4200/#/partners/upload");
-            //redirectView.setStatusCode(OK);
+            try {
+                meliService.getToken(code, clientId, false);
+                MeliUser meliUser = meliService.getUserData(clientId);
+                Client client = clientService.findById(clientId);
+                client.setSellerId(meliUser.getId());
+                clientService.update(clientId, client);
+
+                redirectView.setUrl("http://localhost:4200/#/partners/upload");
+
+            } catch (ClientNotAuthenticateException e) {
+                //inserir status de  erro na autenticação para informar ao cliente no front
+                redirectView.setUrl("http://localhost:4200/#/partners/upload");
+                log.error("Problema na autenticação do cliente", e);
+            }
         } else{
             redirectView.setUrl("http://localhost:4200/#/partners/upload");
-            //redirectView.setStatusCode(BAD_REQUEST);
         }
         return redirectView;
     }

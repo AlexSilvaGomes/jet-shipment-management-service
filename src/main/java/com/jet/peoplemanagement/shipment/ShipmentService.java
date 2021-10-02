@@ -11,7 +11,6 @@ import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,7 @@ public class ShipmentService {
     ShipmentRepository shipmentRepository;
 
     @Autowired
-    ShipmentStatusService deliveryService;
+    ShipmentStatusService shipStatusService;
 
     @Autowired
     RegionService regionService;
@@ -59,7 +58,7 @@ public class ShipmentService {
 
         if (shipmentData.isPresent()) {
             Shipment shipmentResult = shipmentData.get();
-            shipmentResult.setShipmentsStatus(deliveryService.findByShipmentCode(shipmentResult.getShipmentCode()));
+            shipmentResult.setShipmentsStatus(shipStatusService.findByShipmentCode(shipmentResult.getShipmentCode()));
             return shipmentResult;
         } else throw new EntityNotFoundException(Shipment.class, "id", id);
     }
@@ -68,7 +67,7 @@ public class ShipmentService {
         for(Shipment ship: shipmentList){
             ship.setClient(client);
             save(ship);
-            deliveryService.createShipmentStatus(ship);
+            shipStatusService.createShipmentStatus(ship);
         }
         return shipmentList;
     }
@@ -107,6 +106,10 @@ public class ShipmentService {
         shipmentRepository.deleteAll();
     }
 
+    public void deleteByList(List<Shipment> list) {
+        shipmentRepository.deleteAll(list);
+    }
+
     public Shipment findByShipmentCode(String shipmentCode) {
         Optional<Shipment> shipmentData = shipmentRepository.findByShipmentCode(shipmentCode);
 
@@ -119,7 +122,7 @@ public class ShipmentService {
         return shipmentRepository.getShipmentsByParamsPageable(filter);
     }
 
-    public List<Shipment> findByClientStatusAndPeriod(ShipmentFilter filter) {
+    public List<Shipment> findByOptionalParams(ShipmentFilter filter) {
         return shipmentRepository.getShipmentsByParams(filter);
     }
 

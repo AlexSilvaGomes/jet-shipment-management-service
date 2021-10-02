@@ -68,5 +68,6 @@ public class Provider extends BaseDocument implements UserProfile {
     @NotNull
     private LocalDateTime birthDate;
 
+    private int sellerId;
 
 }

@@ -22,8 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.validation.ConstraintViolationException;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -125,6 +124,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleEntityNotFound(
             EntityNotFoundException ex) {
         ApiError apiError = new ApiError(NOT_FOUND);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    /**
+     * Handles GenericErrorException. Created to encapsulate generic errors .
+     *
+     * @param ex the GenericErrorException
+     * @return the ApiError object
+     */
+    @ExceptionHandler(GenericErrorException.class)
+    protected ResponseEntity<Object> handleEntityNotFound(
+            GenericErrorException ex) {
+        ApiError apiError = new ApiError(INTERNAL_SERVER_ERROR);
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }

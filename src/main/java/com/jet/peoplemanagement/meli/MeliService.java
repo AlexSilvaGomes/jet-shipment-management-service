@@ -2,9 +2,11 @@ package com.jet.peoplemanagement.meli;
 
 import com.jet.peoplemanagement.meli.order.OrderRoot;
 import com.jet.peoplemanagement.meli.shipment.ShipmentRoot;
+import com.jet.peoplemanagement.meli.user.MeliUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -36,11 +38,12 @@ public class MeliService {
 
     Map<String, String> stateToClientId = new HashMap<>();
 
-    public OrderRoot getOrdersBySeller(String clientId, String seller) throws Exception {
+    @Cacheable(value = "getOrdersBySeller", key = "#seller")
+    public OrderRoot getOrdersBySeller(String clientId, String seller) throws ClientNotAuthenticateException {
 
         String url = baseUrl + "/orders/search";
 
-        MeliOAuthClient meliClient = verifyAndGetToken(clientId);
+        MeliOAuthClient meliClient = getCachedTokenOrRefresh(clientId);
 
         HttpHeaders headers = getHttpHeaders(meliClient);
         HttpEntity<Map<String, Object>> entityReq = new HttpEntity<>(headers);
@@ -52,22 +55,16 @@ public class MeliService {
         try {
             ResponseEntity<OrderRoot> response = restTemplate.exchange(builder.build().toString(), HttpMethod.GET, entityReq, OrderRoot.class);
 
-            // check response
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Request Successful");
-            } else {
-                System.out.println("Request Failed");
-                System.out.println(response.getStatusCode());
-            }
+            logResponse(response, url);
             return response.getBody();
 
         } catch (Exception e) {
-            //log.error(e.getMessage());
+            log.error(e.getMessage());
             throw e;
         }
     }
 
-    private MeliOAuthClient verifyAndGetToken(String clientId) throws Exception {
+    private MeliOAuthClient getCachedTokenOrRefresh(String clientId) throws ClientNotAuthenticateException {
         MeliOAuthClient meliClient;
 
         if (meliAuth.hasToken(clientId)) {
@@ -76,7 +73,7 @@ public class MeliService {
                 meliClient = getToken(meliClient.getRefreshToken(), "", true);
             }
         } else {
-            throw new Exception("Não tem token de acesso, precisa seguir o fluxo");
+            throw new ClientNotAuthenticateException("Não tem token de acesso, precisa seguir o fluxo");
         }
         return meliClient;
     }
@@ -89,11 +86,12 @@ public class MeliService {
         return builder;
     }
 
-    public ShipmentRoot getShipmentById(String clientId, String shipmentId) throws Exception {
+    @Cacheable(value = "getShipmentById", key = "#shipmentId")
+    public ShipmentRoot getShipmentById(String clientId, String shipmentId) throws ClientNotAuthenticateException {
 
         String url = baseUrl + "/shipments/{id}";
 
-        MeliOAuthClient meliClient = verifyAndGetToken(clientId);
+        MeliOAuthClient meliClient = getCachedTokenOrRefresh(clientId);
 
         HttpHeaders headers = getHttpHeaders(meliClient);
 
@@ -105,28 +103,37 @@ public class MeliService {
         try {
             ResponseEntity<ShipmentRoot> response = restTemplate.exchange(url, HttpMethod.GET, entityReq, ShipmentRoot.class, pathParams);
 
-            // check response
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Request Successful");
-            } else {
-                System.out.println("Request Failed");
-                System.out.println(response.getStatusCode());
-            }
+            logResponse(response, url);
             return response.getBody();
 
         } catch (Exception e) {
-            //log.error(e.getMessage());
+            log.error(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Cacheable(value = "usersMe", key = "#clientId")
+    public MeliUser getUserData(String clientId) throws ClientNotAuthenticateException {
+
+        String url = baseUrl + "/users/me";
+
+        MeliOAuthClient meliClient = getCachedTokenOrRefresh(clientId);
+        HttpHeaders headers = getHttpHeaders(meliClient);
+        HttpEntity<Map<String, Object>> entityReq = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<MeliUser> response = restTemplate.exchange(url, HttpMethod.GET, entityReq, MeliUser.class);
+            logResponse(response, url);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error(e.getMessage());
             throw e;
         }
     }
 
     public MeliOAuthClient getToken(String code, String clientId, boolean isRefreshToken) {
 
-//        if (!stateToClientId.containsKey(state)) {
-//            log.error("clientId/state not found in oAuthResponse from meli");
-//        }
         try {
-            //String clientId = stateToClientId.containsKey(state) ? stateToClientId.get(state) : "clientNotFount";
             String url = baseUrl + "/oauth/token";
             HttpHeaders headers = getHttpHeaders(null);
             //body
@@ -147,11 +154,7 @@ public class MeliService {
             restTemplate.getMessageConverters().add(new FormHttpMessageConverter());
             ResponseEntity<MeliOAuthClient> response = restTemplate.exchange(url, HttpMethod.POST, entityReq, MeliOAuthClient.class);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Sucesso no retorno da url {}", url);
-            } else {
-                log.info("Falha no retorno da url {}", url);
-            }
+            logResponse(response, url);
             meliAuth.putToken(clientId, response.getBody());
             return response.getBody();
 
@@ -159,7 +162,6 @@ public class MeliService {
             throw e;
         }
     }
-
 
     private HttpHeaders getHttpHeaders(MeliOAuthClient client) {
         HttpHeaders headers = new HttpHeaders();
@@ -172,5 +174,12 @@ public class MeliService {
         return headers;
     }
 
+    private void logResponse(ResponseEntity response, String url) {
+        if (response.getStatusCode().is2xxSuccessful()) {
+            log.info("Sucesso em Meli Request para url {}", url);
+        } else {
+            log.warn("Falha em Meli Request para url {}, statusCode", url, response.getStatusCode());
+        }
+    }
 
 }

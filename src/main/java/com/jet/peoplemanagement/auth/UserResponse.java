@@ -12,4 +12,5 @@ public class UserResponse implements Serializable {
     private final String name;
     private final String id;
     private final String cpf;
+    private final int sellerId;
 }

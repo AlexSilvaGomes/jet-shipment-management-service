@@ -6,6 +6,7 @@ import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.shipmentStatus.ShipmentStatus;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -62,5 +63,6 @@ public class Shipment extends BaseDocument {
 
     private Double price;
 
-
+    @Transient
+    private boolean alreadySent;
 }

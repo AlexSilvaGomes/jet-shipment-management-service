@@ -1,6 +1,5 @@
 package com.jet.peoplemanagement.shipment;
 
-import com.jet.peoplemanagement.exception.EntityNotFoundException;
 import com.jet.peoplemanagement.model.Client;
 import com.jet.peoplemanagement.shipmentStatus.DeliveryStatusEnum;
 import com.jet.peoplemanagement.util.ExcelGenerator;
@@ -109,7 +108,7 @@ public class ShipmentController {
         response.setHeader(headerKey, headerValue);
 
         ShipmentFilter filter = new ShipmentFilter(null, null, clientId, status, initDate, endDate, shipmentCode);
-        List<Shipment> shipmentData = shipmentService.findByClientStatusAndPeriod(filter);
+        List<Shipment> shipmentData = shipmentService.findByOptionalParams(filter);
 
         ExcelGenerator gen = new ExcelGenerator("fileName", "período", shipmentData, new String[]{});
         gen.export(response);
