@@ -104,55 +104,7 @@ public class MeliController {
 
     }
 
-    @GetMapping(value = "/meli/orders/{seller}")
-    @ResponseBody
-    public ResponseEntity<List<Shipment>> getOrders(@PathVariable("seller") String seller, @RequestParam(required = true, value = "clientId") String clientId) {
-
-        OrderRoot orders = null;
-        try {
-            orders = meliService.getOrdersBySeller(clientId, seller);
-            ShipmentFilter filter = new ShipmentFilter(null, null, clientId, POSTADO, now(), now(), null);
-            List<Shipment> jetShipmentsToday = shipmentService.findByOptionalParams(filter);
-
-            List<Shipment> meliShipmentsToday = new ArrayList<>();
-            orders.orders.forEach(order -> {
-                order.orderItems.forEach(meliShip -> {
-                    Shipment jetShip = new Shipment();
-                    //jetShip.setClient(new Client(clientId));
-
-                    Optional<Shipment> shipFound = jetShipmentsToday.stream().filter(shipAlreadySent ->  shipAlreadySent.equals(order.getShipping().getId())).findFirst();
-
-                    jetShip.setAlreadySent(shipFound.isPresent());
-
-                    jetShip.setShipmentCode(order.getShipping().getId());
-                    jetShip.setSaleCode(order.getId());
-                    jetShip.setReceiverNickName(order.getBuyer().getNickname());
-                    //jetShip.setReceiverName(getSafeValue(destMap, i));
-                    //jetShip.setReceiverCep(getSafeValue(cepMap, i));
-                    //jetShip.setReceiverAddress(getSafeValue(endMap, i));
-                    //jetShip.setReceiverAddressComp(getSafeValue(compMap, i));
-                    //jetShip.setReceiverCity(getSafeValue(cityMap, 1));
-                    //jetShip.setReceiverNeighbor(getSafeValue(neighborMap, i));
-                    //jetShip.setZone(getSafeValue(zoneMap, i));
-                    jetShip.setProducts(order.toProducts());
-
-                    meliShipmentsToday.add(jetShip);
-                });
-            });
-
-            return new ResponseEntity<>(meliShipmentsToday, OK);
-
-        } catch (ClientNotAuthenticateException clientNotAuthenticateException) {
-            return buildMeliAuthRedirection(clientId);
-        } catch(Exception ex){
-            String message = "Algo de errado no fluxo de verificação de pacotes enviados/a enviar para a jetflex.";
-            log.error(message + " No cliente: {}", clientId);
-            throw new GenericErrorException(message);
-        }
-
-    }
-
-    @GetMapping(value = "/meli/selectedShipments")
+    @PostMapping(value = "/meli/selectedShipments")
     @ResponseBody
     public ResponseEntity<HttpStatus> saveSelectedShipments(@RequestBody SelectedShipments selectedShipments) {
 
@@ -192,6 +144,54 @@ public class MeliController {
         shipmentService.saveAll(client, newShipmentList);
 
         return new ResponseEntity<>(OK);
+    }
+
+    @GetMapping(value = "/meli/orders/{seller}")
+    @ResponseBody
+    public ResponseEntity<List<Shipment>> getOrders(@PathVariable("seller") String seller, @RequestParam(required = true, value = "clientId") String clientId) {
+
+        OrderRoot orders = null;
+        try {
+            orders = meliService.getOrdersBySeller(clientId, seller);
+            ShipmentFilter filter = new ShipmentFilter(null, null, clientId, POSTADO, now(), now(), null);
+            List<Shipment> jetShipmentsToday = shipmentService.findByOptionalParams(filter);
+
+            List<Shipment> meliShipmentsToday = new ArrayList<>();
+            orders.orders.forEach(order -> {
+                order.orderItems.forEach(meliShip -> {
+                    Shipment jetShip = new Shipment();
+                    //jetShip.setClient(new Client(clientId));
+
+                    Optional<Shipment> shipFound = jetShipmentsToday.stream().filter(shipAlreadySent ->  shipAlreadySent.getShipmentCode().equals(order.getShipping().getId())).findFirst();
+
+                    jetShip.setAlreadySent(shipFound.isPresent());
+
+                    jetShip.setShipmentCode(order.getShipping().getId());
+                    jetShip.setSaleCode(order.getId());
+                    jetShip.setReceiverNickName(order.getBuyer().getNickname());
+                    //jetShip.setReceiverName(getSafeValue(destMap, i));
+                    //jetShip.setReceiverCep(getSafeValue(cepMap, i));
+                    //jetShip.setReceiverAddress(getSafeValue(endMap, i));
+                    //jetShip.setReceiverAddressComp(getSafeValue(compMap, i));
+                    //jetShip.setReceiverCity(getSafeValue(cityMap, 1));
+                    //jetShip.setReceiverNeighbor(getSafeValue(neighborMap, i));
+                    //jetShip.setZone(getSafeValue(zoneMap, i));
+                    jetShip.setProducts(order.toProducts());
+
+                    meliShipmentsToday.add(jetShip);
+                });
+            });
+
+            return new ResponseEntity<>(meliShipmentsToday, OK);
+
+        } catch (ClientNotAuthenticateException clientNotAuthenticateException) {
+            return buildMeliAuthRedirection(clientId);
+        } catch(Exception ex){
+            String message = "Algo de errado no fluxo de verificação de pacotes enviados/a enviar para a jetflex.";
+            log.error(message + " No cliente: {}", clientId);
+            throw new GenericErrorException(message);
+        }
+
     }
 
 
